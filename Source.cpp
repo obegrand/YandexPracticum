@@ -1,12 +1,14 @@
 //for YandexPracticum from obegrand - Andrey Melnikov
 #include <iostream>
+#include <ctime>
+
 
 int main() {
-	std::cout << "The quote from \"Hamlet\":" << std::endl;
-	std::cout << "To be, or not to be, that is the question:" << std::endl;
-	std::cout << "Whether 'tis nobler in the mind to suffer" << std::endl;
-	std::cout << "The slings and arrows of outrageous fortune," << std::endl;
-	std::cout << "Or to take arms against a sea of troubles" << std::endl;
-	std::cout << "And by opposing end them." << std::endl;
+	srand(time(NULL));
+	for (size_t i = 0; i < 5; i++)
+	{
+		int x = rand() % 20;
+		std::cout << "Number " << x << " is between " << x - 1 << " and " << x + 1 << ". doubled " << x << " is " << x + x << "." << std::endl;
+	}
 	system("pause");
 }
