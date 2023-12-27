@@ -4,18 +4,31 @@
 
 using namespace std;
 
+void What_is_your_name();
+void Calculator();
+
 int main() {
 	srand(time(NULL));
-	/*for (size_t i = 0; i < 5; i++)
-	{
-		int x = rand() % 99 + 1;
-		std::cout << "Number " << x << " is between " << x - 1 << " and " << x + 1 << ". Doubled " << x << " is " << x + x << "." << std::endl;
-	}*/
-	double a = 3;
-	double b = 4;
-	double c = 5;
-	double p = (a + b + c) / 2;
-	double s = sqrt(p * (p - a) * (p - b) * (p - c));
-	std::cout << "s = " << s << endl;
+	
+	Calculator();
 	system("pause");
+}
+
+void What_is_your_name() {
+	cout << "What is your name ?" << endl;
+	string name;
+	cin >> name;
+	cout << "Hello, " << name << "!" << endl;
+}
+
+void Calculator()
+{
+	cout << "Enter x and y:" << endl;
+	double x = 0, y = 0;
+	cin >> x, cin >> y;
+	cout << "x + y = " << x + y << endl;
+	cout << "x - y = " << x - y << endl;
+	cout << "x * y = " << x * y << endl;
+	if (y != 0) { cout << "x / y = " << x / y << endl; }
+	else { cout << "you cannot divide by 0" << endl; }
 }
