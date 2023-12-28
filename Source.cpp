@@ -12,9 +12,17 @@ void SmartCalculator();
 
 int main() {
 	srand(time(NULL));
-	
+	/*int* arr = new int[10000000];
+	system("pause");
+	for (int i = 0; i < 10000000; i++)
+	{if (i == 5000000)
+		{
+			system("pause");
+		}
+		arr[i] = rand() + 1000000 + 1;
+	}
+	delete[] arr;*/
 	SmartCalculator();
-	
 	system("pause");
 }
 
@@ -70,5 +78,4 @@ void SmartCalculator() {
 	} else if (oper != "+" and oper != "-" and oper != "*" and oper != "/") {
 
 	}
-	
 }
