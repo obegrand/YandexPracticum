@@ -1,4 +1,4 @@
-//for YandexPracticum from obegrand - Andrey Melnikov
+//for YandexPracticum from obegrand aka Andrey Melnikov
 #include <iostream>
 #include <ctime>
 
@@ -9,20 +9,15 @@ void Calculator();
 void HowOldAreYou();
 void SolvingComplete();
 void SmartCalculator();
+void WhatIsTriangler();
+void First1st();
 
 int main() {
 	srand(time(NULL));
-	/*int* arr = new int[10000000];
-	system("pause");
-	for (int i = 0; i < 10000000; i++)
-	{if (i == 5000000)
-		{
-			system("pause");
-		}
-		arr[i] = rand() + 1000000 + 1;
+	while (true)
+	{
+		First1st();
 	}
-	delete[] arr;*/
-	SmartCalculator();
 	system("pause");
 }
 
@@ -73,9 +68,76 @@ void SmartCalculator() {
 	double x, y;
 	string oper;
 	cin >> x, cin >> oper, cin >> y;
-	if (oper == "/" and y == 0){
-		cout << "Division by zero"s << endl;
-	} else if (oper != "+" and oper != "-" and oper != "*" and oper != "/") {
-
+	if (oper == "+") 
+	{
+		cout << "= " << x + y << endl;
 	}
+	else if (oper == "-")
+	{
+		cout << "= " << x - y << endl;
+	}
+	else if (oper == "*")
+	{
+		cout << "= " << x * y << endl;
+	}
+	else if (oper == "/")
+	{
+		if (y == 0)
+		{
+			cout << "Division by zero" << endl;
+		}
+		else
+		{
+			cout << "= " << x / y << endl;
+		}
+	}
+	else
+	{
+		cout << "Unknown operation: " << oper << endl;
+	}
+}
+
+void WhatIsTriangler() {
+	int a, b, c = 0;
+	cin >> a >> b >> c;
+	if (a + b > c && a + c > b && b + c > a){
+		if (a == b && b == c && a == c) {
+			cout << "equilateral triangle" << endl;
+		}
+		else if (a == b || b == c || a == c) {
+			cout << "isosceles triangle" << endl;
+		}
+		else { cout << "common triangle" << endl; }
+	}
+	else { cout << "incorrect triangle" << endl; }
+}
+
+void First1st() {
+	int number, leftover, leftover10;
+	string sufex;
+	bool minus;
+	cin >> number;
+	if (number < 0) { minus = true; } else { minus = false; }
+	number = abs(number);
+	leftover = number % 10;
+	leftover10 = number % 100;
+	if (leftover10 == 11 || leftover10 == 12 || leftover10 == 13)
+	{
+		sufex = "th";
+	}
+	else if (leftover == 1)
+	{
+		sufex = "st";
+	}
+	else if (leftover == 2)
+	{
+		sufex = "nd";
+	}
+	else if (leftover == 3)
+	{
+		sufex = "rd";
+	}
+	else { sufex = "th"; }
+	if (!minus) { cout << number << sufex << endl; }
+	else { cout << "-" << number << sufex << endl; }
 }
