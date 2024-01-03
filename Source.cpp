@@ -1,6 +1,7 @@
 //for YandexPracticum from obegrand aka Andrey Melnikov
 #include <iostream>
 #include <ctime>
+#include <vector>
 
 using namespace std;
 
@@ -11,13 +12,17 @@ void SolvingComplete();
 void SmartCalculator();
 void WhatIsTriangler();
 void First1st();
+void SwapVector5numbers();
+void ReversedVector();
+
+vector<string> some_vector = { "one", "two", "three", "four", "five" };
 
 int main() {
 	srand(time(NULL));
-	while (true)
-	{
-		First1st();
+	for (string str : some_vector) {
+		cout << str << ", ";
 	}
+	cout << endl;
 	system("pause");
 }
 
@@ -140,4 +145,28 @@ void First1st() {
 	else { sufex = "th"; }
 	if (!minus) { cout << number << sufex << endl; }
 	else { cout << "-" << number << sufex << endl; }
+}
+
+void SwapVector5numbers(){
+	vector<int> five_nums = { 100, 28, 37, 66, 16536 };
+	for (int i = 0; i < five_nums.size(); i++) { cout << five_nums[i] << " "; }cout << endl;
+	int tmpSwap;
+	tmpSwap = five_nums[4];
+	five_nums[4] = five_nums[0];
+	five_nums[0] = tmpSwap;
+	tmpSwap = five_nums[3];
+	five_nums[3] = five_nums[1];
+	five_nums[1] = tmpSwap;
+	for (int i = 0; i < five_nums.size(); i++) { cout << five_nums[i] << " "; }cout << endl;
+}
+
+void ReversedVector() {
+	vector<int> some_vector = { 2, 4, 8, 16 };
+	vector<int> reversed_vector;
+	for (int i = 0; i < some_vector.size(); i++) { cout << some_vector[i] << " "; }cout << endl;
+	for (int i = some_vector.size(); i > 0; i--) {
+		reversed_vector.push_back(some_vector[i - 1]);
+	}
+	some_vector.clear();
+	for (int i = 0; i < reversed_vector.size(); i++) { cout << reversed_vector[i] << " "; }cout << endl;
 }
