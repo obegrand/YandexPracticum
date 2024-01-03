@@ -15,14 +15,18 @@ void First1st();
 void SwapVector5numbers();
 void ReversedVector();
 
-vector<string> some_vector = { "one", "two", "three", "four", "five" };
+vector<int> some_vector = { 10, -2, 5, -42 };
 
 int main() {
 	srand(time(NULL));
-	for (string str : some_vector) {
-		cout << str << ", ";
+	for (int i : some_vector)
+	{
+		for (int j : some_vector)
+		{
+			cout << i * j << " ";
+		}
+		cout<<endl;
 	}
-	cout << endl;
 	system("pause");
 }
 
