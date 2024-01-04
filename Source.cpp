@@ -14,19 +14,13 @@ void WhatIsTriangler();
 void First1st();
 void SwapVector5numbers();
 void ReversedVector();
+void PrintBirthday(string name, int birth_year, int age);
 
-vector<int> some_vector = { 10, -2, 5, -42 };
+vector<int> some_vector = { 10, 2, 5, 86, 50 };
 
 int main() {
 	srand(time(NULL));
-	for (int i : some_vector)
-	{
-		for (int j : some_vector)
-		{
-			cout << i * j << " ";
-		}
-		cout<<endl;
-	}
+	
 	system("pause");
 }
 
@@ -173,4 +167,17 @@ void ReversedVector() {
 	}
 	some_vector.clear();
 	for (int i = 0; i < reversed_vector.size(); i++) { cout << reversed_vector[i] << " "; }cout << endl;
+}
+
+void PrintBirthday(string name, int birth_year, int age) {
+	cout << name << " will turn " << age << " in " << age + birth_year << endl;
+	if (age % 50 == 0) {
+		cout << "Happy great anniversary!" << endl;
+	}
+	else if (age % 10 == 0) {
+		cout << "Happy anniversary!" << endl;
+	}
+	else {
+		cout << "Happy birthday!" << endl;
+	}
 }
