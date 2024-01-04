@@ -26,9 +26,7 @@ int FindInVector(vector<string> haystack, string needle);
 
 int main() {
 	srand(time(NULL));
-	TestFind({ "zero"s, "one"s, "two"s, "three"s, "four"s, "five"s }, "four"s);
-	TestFind({ "one"s, "two"s, "three"s }, "four"s);
-	TestFind({ "to"s, "be"s, "or"s, "not"s, "to"s, "be"s }, "be"s);
+	
 	system("pause");
 }
 
