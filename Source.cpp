@@ -15,12 +15,20 @@ void First1st();
 void SwapVector5numbers();
 void ReversedVector();
 void PrintBirthday(string name, int birth_year, int age);
+int ComputeAbs(int i);
+double ComputeAbs(double i);
+float ComputeAbs(float i);
+vector<int> ComputeAbs(vector<int> vec);
+void PrintVector(vector<string> v);
+void TestFind(vector<string> haystack, string needle);
+int FindInVector(vector<string> haystack, string needle);
 
-vector<int> some_vector = { 10, 2, 5, 86, 50 };
 
 int main() {
 	srand(time(NULL));
-	
+	TestFind({ "zero"s, "one"s, "two"s, "three"s, "four"s, "five"s }, "four"s);
+	TestFind({ "one"s, "two"s, "three"s }, "four"s);
+	TestFind({ "to"s, "be"s, "or"s, "not"s, "to"s, "be"s }, "be"s);
 	system("pause");
 }
 
@@ -180,4 +188,61 @@ void PrintBirthday(string name, int birth_year, int age) {
 	else {
 		cout << "Happy birthday!" << endl;
 	}
+}
+
+int ComputeAbs(int i) {
+	return abs(i);
+}
+
+double ComputeAbs(double i) {
+	return abs(i);
+}
+
+float ComputeAbs(float i) {
+	return abs(i);
+}
+
+vector<int> ComputeAbs(vector<int> vec) {
+	for (int i = 0; i < vec.size(); i++) {
+		vec[i] = abs(vec[i]);
+	}
+	return vec;
+}
+
+void PrintVector(vector<string> v) {
+	bool is_first = true;
+	for (string s : v) {
+		if (!is_first) {
+			cout << ", "s;
+		}
+		cout << s;
+		is_first = false;
+	}
+}
+
+void TestFind(vector<string> haystack, string needle) {
+	int result = FindInVector(haystack, needle);
+
+	if (result < 0) {
+		cout << needle << " not found in "s;
+		PrintVector(haystack);
+		cout << endl;
+	}
+	else if (result < haystack.size() && haystack[result] == needle) {
+		cout << needle << " found at "s << result << endl;
+	}
+	else {
+		cout << "Incorrect result"s << endl;
+	}
+}
+
+int FindInVector(vector<string> haystack, string needle) {
+	for (size_t i = 0; i < haystack.size(); i++)
+	{
+		if (haystack[i] == needle)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
