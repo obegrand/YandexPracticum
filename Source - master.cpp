@@ -31,6 +31,19 @@ void Hause_numbers() {
 
 int main() {
 	srand(time(NULL));
-	Hause_numbers();
+	int x, y;
+	cin >> x >> y;
+	if (x < y) {
+		for (int i = x; i < y + 1; ++i) {
+			cout << i << endl;
+		}
+	}
+	if (x > y) {
+		for (int i = y; i > x; --i) {
+			cout << i << endl;
+		}
+	}for (int i = x; i < y + 1; ++i) {
+		cout << i << endl;
+	}
 	system("pause");
 }
