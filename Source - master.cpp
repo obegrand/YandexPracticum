@@ -7,43 +7,38 @@
 
 using namespace std;
 
-void Hause_numbers() {
-	vector<string> color = { "","", "", "" };
-	vector<int> floor = { 0,0,0,0 };
-	for (size_t i = 0; i < 4; i++)
-	{
-		cin >> color[i];
-		cin >> floor[i];
+void GetWords() {
+	vector<string> words;
+
+	string query;
+	getline(cin, query);
+
+	string word;
+
+	for (char c : query) {
+		if (c == ' ')
+		{
+			if (word != "")
+			{
+				words.push_back(word);
+				word = ""s;
+			}
+		}
+		else {
+			word += c;
+		}
 	}
-	for (size_t i = 0; i < 3; i++)
+	if (word != "")//добавляем последнее слово
 	{
-		if (color[i] == color[3]&& floor[i] == floor[3]){
-			cout << i + 1 << endl;
-		}
-		if ((color[3] == "?" || floor[3] == -1) && (color[i] == color[3] || floor[i] == floor[3])) {
-			cout << i + 1 << endl;
-		}
-		if (color[3] == "?" && floor[3] == -1) {
-			cout << i + 1 << endl;
-		}
+		words.push_back(word);
 	}
+	//это уже вывод
+	/*for (string wordw : words) {
+		cout << '[' << wordw << ']' << endl;
+	}*/
 }
 
 int main() {
-	srand(time(NULL));
-	int x, y;
-	cin >> x >> y;
-	if (x < y) {
-		for (int i = x; i < y + 1; ++i) {
-			cout << i << endl;
-		}
-	}
-	if (x > y) {
-		for (int i = y; i > x; --i) {
-			cout << i << endl;
-		}
-	}for (int i = x; i < y + 1; ++i) {
-		cout << i << endl;
-	}
+	
 	system("pause");
 }
