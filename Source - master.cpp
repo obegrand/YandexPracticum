@@ -7,38 +7,35 @@
 
 using namespace std;
 
-void GetWords() {
-	vector<string> words;
-
-	string query;
-	getline(cin, query);
-
-	string word;
-
+std::vector<std::string> GetWords(std::string query) {
+	std::vector<std::string> words;
+	std::string word;
 	for (char c : query) {
 		if (c == ' ')
 		{
-			if (word != "")
+			if (word != "") //првоерка на пустоту 
 			{
 				words.push_back(word);
-				word = ""s;
+				word = "";
 			}
 		}
 		else {
 			word += c;
 		}
 	}
-	if (word != "")//добавляем последнее слово
+	if (word != "") //добавляем последнее слово
 	{
 		words.push_back(word);
 	}
-	//это уже вывод
-	/*for (string wordw : words) {
-		cout << '[' << wordw << ']' << endl;
-	}*/
+	return words;
 }
 
 int main() {
-	
+	string query;
+	getline(cin, query);
+	for (string wordw : GetWords(query)) {
+		cout << wordw << " ";
+	}
+	cout << endl;
 	system("pause");
 }
