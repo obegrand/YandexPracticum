@@ -30,47 +30,35 @@ std::vector<std::string> GetWords(std::string query) {
 	return words;
 }
 
-void IsPalindrome(string s) {
-	if (s.size() <= 1)
-	{
-		cout << "1"s << endl;
-	}
-	else {
-		int counter = 0;
-		for (int i = 0; i < s.size() / 2; i++)
-		{
-			if (s[i] == s[s.size() -1 - i])
-			{
-				++counter;
-			}
-		}
-		if (counter == s.size()/2)
-		{
-			cout << "1"s << endl;
-		}
-		else
-		{
-			cout << "0"s << endl;
+bool IsPalindrome(string s) {
+	for (int i = 0; i < s.size() / 2; ++i) {
+		if (s[i] != s[s.size() - i - 1]) {
+			return false;
 		}
 	}
+	return true;
 }
 
-int Factorial(int x) {
-	if (x == 0) { return 1; }
-	bool minus = false;
-	int rez = 1;
-	if (x < 0) { minus = true; x *= -1; }
-	for (int i = 1; i < x + 1; i++) {
-		rez *= i;
+vector<string> PalindromeFilter(vector<string> words, int min_length) {
+	vector<string> filtered_words;
+	for (string word : words)
+	{
+		if (IsPalindrome(word) && word.size() >= min_length)
+		{
+			filtered_words.push_back(word);
+		}
 	}
-	if (minus && x % 2 == true) { return rez * -1; }
-	return rez;
+	return filtered_words;
 }
 
 int main() {
-	for (int i = -10; i < 10; i++)
+	string query;
+	getline(cin, query);
+	vector<string> words = GetWords(query);
+	vector<string> palidrom_words = PalindromeFilter(words, 3);
+	for (size_t i = 0; i < palidrom_words.size(); i++)
 	{
-		cout << Factorial(i) << endl;
+		cout << palidrom_words[i] << endl;
 	}
 	system("pause");
 }
