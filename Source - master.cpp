@@ -8,52 +8,64 @@
 
 using namespace std;
 
-vector<string> SplitIntoWords(string text);
 set<string> MakeSet(vector<string> query_words);
 vector<string> MakeVector(set<string> query_words);
-vector<string> RemoveStopWords(set<string> stop_words, vector<string> words);
+vector<string> SplitIntoWords(const string& text);
+set<string> ParseStopWords(const string& text);
+vector<string> ParseQuery(string text, set<string> stop_words);
 
 int main() {
-	string query;
-	getline(cin, query);
-	set<string> stop_words = MakeSet(SplitIntoWords(query));
-	getline(cin, query);
-	vector<string> words = SplitIntoWords(query);
-	vector<string> result = RemoveStopWords(stop_words, words);
-	for (string word : result) {
-		cout << '[' << word << ']' << endl;
-	}
-	system("pause");
+    // Read stop words
+    string stop_words_joined;
+    getline(cin, stop_words_joined);
+    set<string> stop_words = ParseStopWords(stop_words_joined);
+
+    // Read query
+    string query;
+    getline(cin, query);
+    vector<string> query_words = ParseQuery(query, stop_words);
+
+    for (string word : query_words) {
+        cout << '[' << word << ']' << endl;
+    }
 }
 
-vector<string> RemoveStopWords(set<string> stop_words, vector<string> words) {
-	vector<string> result;
-	for (int i = 0; i < words.size(); i++){
-		if (stop_words.count(words[i])==0){
-			result.push_back(words[i]);
-		}
-	}
-	return result;
+vector<string> SplitIntoWords(const string& text) {
+    vector<string> words;
+    string word;
+    for (char c : text) {
+        if (c == ' ') {
+            if (!word.empty()) {
+                words.push_back(word);
+                word.clear();
+            }
+        }
+        else {
+            word += c;
+        }
+    }
+    if (!word.empty()) {
+        words.push_back(word);
+    }
+    return words;
 }
 
-vector<string> SplitIntoWords(string text) {
-	vector<string> words;
-	string word;
-	for (const char c : text) {
-		if (c == ' ') {
-			if (!word.empty()) {
-				words.push_back(word);
-				word.clear();
-			}
-		}
-		else {
-			word += c;
-		}
-	}
-	if (!word.empty()) {
-		words.push_back(word);
-	}
-	return words;
+set<string> ParseStopWords(const string& text) {
+    set<string> stop_words;
+    for (string& word : SplitIntoWords(text)) {
+        stop_words.insert(word);
+    }
+    return stop_words;
+}
+
+vector<string> ParseQuery(string text, set<string> stop_words) {
+    vector<string> words;
+    for (string word : SplitIntoWords(text)) {
+        if (stop_words.count(word) == 0) {
+            words.push_back(word);
+        }
+    }
+    return words;
 }
 
 set<string> MakeSet(vector<string> query_words) {
