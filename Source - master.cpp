@@ -8,41 +8,32 @@
 
 using namespace std;
 
-//bool IsPalindrome(string s) {
-//	for (int i = 0; i < s.size() / 2; ++i) {
-//		if (s[i] != s[s.size() - i - 1]) {
-//			return false;
-//		}
-//	}
-//	return true;
-//}
-//
-//vector<string> PalindromeFilter(vector<string> words, int min_length) {
-//	vector<string> filtered_words;
-//	for (string word : words)
-//	{
-//		if (IsPalindrome(word) && word.size() >= min_length)
-//		{
-//			filtered_words.push_back(word);
-//		}
-//	}
-//	return filtered_words;
-//}
-//
-//string query;
-//getline(cin, query);
-//vector<string> words = GetWords(query);
-//vector<string> palidrom_words = PalindromeFilter(words, 3);
+vector<string> SplitIntoWords(string text);
+set<string> MakeSet(vector<string> query_words);
+vector<string> MakeVector(set<string> query_words);
+vector<string> RemoveStopWords(set<string> stop_words, vector<string> words);
 
-int CalculateSimilarity(vector<string> first, vector<string> second) {
-	// верните размер пересечения множеств слов first и second
-	set<string> similarityWords;
-	for (string word1 : first) {
-		for (string word2 : second) {
-			if (word1 == word2) { similarityWords.insert(word2); }
+int main() {
+	string query;
+	getline(cin, query);
+	set<string> stop_words = MakeSet(SplitIntoWords(query));
+	getline(cin, query);
+	vector<string> words = SplitIntoWords(query);
+	vector<string> result = RemoveStopWords(stop_words, words);
+	for (string word : result) {
+		cout << '[' << word << ']' << endl;
+	}
+	system("pause");
+}
+
+vector<string> RemoveStopWords(set<string> stop_words, vector<string> words) {
+	vector<string> result;
+	for (int i = 0; i < words.size(); i++){
+		if (stop_words.count(words[i])==0){
+			result.push_back(words[i]);
 		}
 	}
-	return similarityWords.size();
+	return result;
 }
 
 vector<string> SplitIntoWords(string text) {
@@ -65,12 +56,12 @@ vector<string> SplitIntoWords(string text) {
 	return words;
 }
 
-int main() {
-	string query, description;
+set<string> MakeSet(vector<string> query_words) {
+	set<string> result(query_words.begin(), query_words.end());
+	return result;
+}
 
-	getline(cin, query);
-	getline(cin, description);
-
-	cout << CalculateSimilarity(SplitIntoWords(query), SplitIntoWords(description)) << endl;
-	system("pause");
+vector<string> MakeVector(set<string> query_words) {
+	vector<string> result(query_words.begin(), query_words.end());
+	return result;
 }
