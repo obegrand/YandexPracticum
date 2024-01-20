@@ -19,7 +19,7 @@ string ReadLine() {
 int ReadLineWithNumber() {
 	int result = 0;
 	cin >> result;
-	ReadLine(); //точнее зачем тут это
+	ReadLine(); //точнее зачем тут это 
 	return result;
 }
 
