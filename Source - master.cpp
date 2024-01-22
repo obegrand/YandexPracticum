@@ -5,15 +5,22 @@
 
 using namespace std;
 
-int main() {
-    map<string, int> days_here = { {"Karl"s, 10}, {"Gustav"s, 3}, {"Richard"s, 42}, {"Wolfgang"s, 15} };
-    {
-        map<string, int> days_here_new;
-        for (const auto& [name, days] : days_here) {
-            days_here_new["Mr. "s + name] = days;
-        }
-        days_here = days_here_new;
+bool CheckAnagram(const string& s1, const string& s2) {
+    // напишите решение тут
+}
+
+void CheckIsTrue(bool value) {
+    if (value) {
+        cout << "Test passed :)"s << endl;
     }
-    cout << "Mr. Karl has been here for "s << days_here["Mr. Karl"s] << " days"s << endl;
-    system("pause");
+    else {
+        cout << "Test failed :("s << endl;
+    }
+}
+
+int main() {
+    CheckIsTrue(CheckAnagram("tea"s, "eat"s));
+    CheckIsTrue(!CheckAnagram("battle"s, "beatle"s));
+    CheckIsTrue(!CheckAnagram("lift"s, "elevator"s));
+    CheckIsTrue(CheckAnagram("ocean"s, "canoe"s));
 }
