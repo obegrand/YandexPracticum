@@ -62,7 +62,7 @@ public:
     void AddDocument(int document_id, const string& document) {
         const vector<string> words = SplitIntoWordsNoStop(document);
         for (auto& word : words) {
-            word_to_document_[word][document_id] += 1.0 / words.size(); //вычисляем TF ещё на уровне добавления документа
+            word_to_document_[word][document_id] += 1.0 / words.size();
         }
         ++document_counter_;
     }
@@ -117,21 +117,21 @@ private:
     }
 
     vector<Document> FindAllDocuments(const Query& query_words) const {
-        map<int, double> document_to_relevance; //создаём массив типа {id,relevance}
-        for (const string& word : query_words.plus_words) { //проходимся по массиву поисковых плюс слов
-            if (word_to_document_.count(word) == 0) { //если в поисковом массиве нету слова переходим к следующиму
+        map<int, double> document_to_relevance;
+        for (const string& word : query_words.plus_words) {
+            if (word_to_document_.count(word) == 0) { 
                 continue;
             }
-            for (const auto& [document_id, TF] : word_to_document_.at(word)) { //если всё же есть проходимся по его ай 
-                double IDF = log(static_cast<double>(document_counter_) / word_to_document_.at(word).size()); //находим IDF чекрез log(e)
-                document_to_relevance[document_id] += IDF * TF; //вычислям общую релевантность
+            for (const auto& [document_id, TF] : word_to_document_.at(word)) {
+                double IDF = log(static_cast<double>(document_counter_) / word_to_document_.at(word).size());
+                document_to_relevance[document_id] += IDF * TF;
             }
         }
-        for (const string& word : query_words.minus_words) { //проходимся по массиву поисковых плюс слов
-            if (word_to_document_.count(word) == 0) { //если в поисковом массиве нету слова переходим к следующими
+        for (const string& word : query_words.minus_words) {
+            if (word_to_document_.count(word) == 0) {
                 continue;
             }
-            for (const auto& [document_id, TF] : word_to_document_.at(word)) { //если всё же есть проходимся по его ай 
+            for (const auto& [document_id, TF] : word_to_document_.at(word)) { 
                 document_to_relevance.erase(document_id);
             }
         }
@@ -164,5 +164,5 @@ int main() {
         cout << "{ document_id = "s << document_id << ", "
             << "relevance = "s << relevance << " }"s << endl;
     }
-    //system("pause"); //в моей IDE консоль сразу закрываеться
+    //system("pause");
 }
