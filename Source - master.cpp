@@ -1,40 +1,60 @@
 #include <numeric>
 #include <ostream>
-#include <vector>
 #include <iostream>
 
 using namespace std;
 
-// Класс Дроби в виде *numerator* / *denominator*
 class Rational {
 public:
-    // создание дроби 0/1
     Rational() = default;
 
-    // создание дроби *numerator*/1 
     Rational(int numerator)
         : numerator_(numerator)
         , denominator_(1) {
     }
 
-    // создание дроби *numerator* / *denominator*
     Rational(int numerator, int denominator)
         : numerator_(numerator)
         , denominator_(denominator) {
         Normalize();
     }
 
-    // получение *numerator*
     int Numerator() const {
         return numerator_;
     }
 
-    // получение *denominator*
     int Denominator() const {
         return denominator_;
     }
+
+    Rational operator+=(Rational drob) {
+        numerator_ = numerator_ * drob.Denominator() + drob.Numerator() * denominator_;
+        denominator_ *= drob.Denominator();
+        Normalize();
+        return *this;
+    }
+    
+    Rational operator-=(Rational drob) {
+        numerator_ = numerator_ * drob.Denominator() - drob.Numerator() * denominator_;
+        denominator_ *= drob.Denominator();
+        Normalize();
+        return *this;
+    }
+        
+    Rational operator*=(Rational drob) {
+        numerator_ *= drob.Numerator();
+        denominator_ *= drob.Denominator();
+        Normalize();
+        return *this;
+    }
+            
+    Rational operator/=(Rational drob) {
+        numerator_ *= drob.Denominator();
+        denominator_ *= drob.Numerator();
+        Normalize();
+        return *this;
+    }
 private:
-    // приведение к НОД(Наибольшему общему делителю)
     void Normalize() {
         if (denominator_ < 0) {
             numerator_ = -numerator_;
@@ -49,13 +69,35 @@ private:
     int denominator_ = 1;
 };
 
-// вывод
+bool operator==(Rational left, Rational right) {
+    return left.Numerator() == right.Numerator() && left.Denominator() == right.Denominator();
+}
+
+bool operator!=(Rational left, Rational right) {
+    return !(left == right);
+}
+
+bool operator<(Rational left, Rational right) {
+    return left.Numerator() / left.Denominator() < right.Numerator() / right.Denominator();
+}
+
+bool operator>(Rational left, Rational right) {
+    return !(left < right);
+}
+
+bool operator<=(Rational left, Rational right) {
+    return (left < right) || (left == right);
+}
+
+bool operator>=(Rational left, Rational right) {
+    return !(left < right) || (left == right);
+}
+
 ostream& operator<<(ostream& output, Rational rational) {
     output << rational.Numerator() << "/"s << rational.Denominator();
     return output;
 }
 
-// ввод
 istream& operator>>(istream& input, Rational& rational) {
     int numer, denominat;
     char drob;
@@ -64,37 +106,51 @@ istream& operator>>(istream& input, Rational& rational) {
     return input;
 }
 
-// сложение дробей
 Rational operator+(Rational left, Rational right) {
     const int numerator = left.Numerator() * right.Denominator() + right.Numerator() * left.Denominator();
     const int denominator = left.Denominator() * right.Denominator();
     return { numerator, denominator };
 }
 
-// вычитание дробей
 Rational operator-(Rational left, Rational right) {
     const int numerator = left.Numerator() * right.Denominator() - right.Numerator() * left.Denominator();
     const int denominator = left.Denominator() * right.Denominator();
     return { numerator, denominator };
 }
 
-// умножение дробей
 Rational operator*(Rational left, Rational right) {
     const int numerator = left.Numerator() * right.Numerator();
     const int denominator = left.Denominator() * right.Denominator();
     return { numerator, denominator };
 }
 
-// унарный плюс
+Rational operator/(Rational left, Rational right) {
+    const int numerator = left.Numerator() * right.Denominator();
+    const int denominator = left.Denominator() * right.Numerator();
+    return { numerator, denominator };
+}
+
 Rational operator+(Rational drob) {
     return drob;
 }
 
-// унарный минус
 Rational operator-(Rational drob) {
     return { -drob.Numerator(),drob.Denominator()};
 }
 
 int main() {
-    Rational rat();
+    while (true)
+    {
+        Rational a, b;
+        cin >> a >> b;
+
+        // Аналогично if (b != Rational{0})
+        if (a < b) {
+            cout << a << "<" << b << endl;
+        }
+        else {
+            cout << a << ">" << b << endl;
+        }
+
+    }
 }
