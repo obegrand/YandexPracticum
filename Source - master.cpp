@@ -12,6 +12,7 @@
 using namespace std;
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+const float EPSILON = 1e-6;
 
 string ReadLine() {
 	string s;
@@ -68,12 +69,27 @@ enum class DocumentStatus {
 	REMOVED,
 };
 
+template <typename StringContainer>
+set<string> MakeUniqueNonEmptyStrings(const StringContainer& strings) {
+	set<string> non_empty_strings;
+	for (const string& str : strings) {
+		if (!str.empty()) {
+			non_empty_strings.insert(str);
+		}
+	}
+	return non_empty_strings;
+}
+
 class SearchServer {
 public:
 	template <typename StringContainer>
-	explicit SearchServer(const StringContainer& stop_words) : stop_words_(MakeUniqueNonEmptyStrings(stop_words)) { }
+	explicit SearchServer(const StringContainer& stop_words) : stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
+		if (!IsValidStopWord()) { throw invalid_argument("The document contains special characters"); };
+	}
 
-	explicit SearchServer(const string& stop_words_text) : SearchServer(SplitIntoWords(stop_words_text)) { }
+	explicit SearchServer(const string& stop_words_text) : SearchServer(SplitIntoWords(stop_words_text)) {
+		if (!IsValidStopWord()) { throw invalid_argument("The document contains special characters"); };
+	}
 
 	void AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
 		if (documents_.count(document_id) > 0) { throw invalid_argument("ID already exists"); }
@@ -90,25 +106,12 @@ public:
 
 	template <typename DocumentPredicate>
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
-		if (raw_query.empty()) {
-			throw invalid_argument("Query is empty");
-		}
-
-		for (const string& word : SplitIntoWords(raw_query)) {
-			if (!IsValidWord(word)) {
-				throw invalid_argument("Query contains special characters");
-			}
-			if (!IsValidMinusWord(word)) {
-				throw invalid_argument("Error in query");
-			}
-		}
-
 		const Query query = ParseQuery(raw_query);
 		auto matched_documents = FindAllDocuments(query, document_predicate);
 
 		sort(matched_documents.begin(), matched_documents.end(),
 			[](const Document& lhs, const Document& rhs) {
-				if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+				if (abs(lhs.relevance - rhs.relevance) < EPSILON) {
 					return lhs.rating > rhs.rating;
 				}
 				else {
@@ -133,19 +136,6 @@ public:
 	}
 
 	tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const {
-		if (raw_query.empty()) {
-			throw invalid_argument("Query is empty");
-		}
-
-		for (const string& word : SplitIntoWords(raw_query)) {
-			if (!IsValidWord(word)) {
-				throw invalid_argument("Query contains special characters");
-			}
-			if (!IsValidMinusWord(word)) {
-				throw invalid_argument("Error in query");
-			}
-		}
-
 		const Query query = ParseQuery(raw_query);
 		auto status = documents_.at(document_id).status;
 		vector<string> matched_words;
@@ -187,18 +177,11 @@ private:
 	map<int, DocumentData> documents_;
 	vector<int> documents_index_;
 
-	template <typename StringContainer>
-	set<string> MakeUniqueNonEmptyStrings(const StringContainer& strings) {
-		set<string> non_empty_strings;
-		for (const string& str : strings) {
-			if (!str.empty() && IsValidWord(str)) {
-				non_empty_strings.insert(str);
-			}
-			else {
-				throw invalid_argument("Stop-words contains special characters");
-			}
+	bool IsValidStopWord() const {
+		for (const string& word : stop_words_) {
+			if (!IsValidWord(word)) { return false; }
 		}
-		return non_empty_strings;
+		return true;
 	}
 
 	static bool IsValidWord(const string& word) {
@@ -255,13 +238,14 @@ private:
 
 	QueryWord ParseQueryWord(string text) const {
 		bool is_minus = false;
-		// Word shouldn't be empty
+		if (text.empty()) { throw invalid_argument("Query is empty"); }
+		if (!IsValidWord(text)) { throw invalid_argument("Query contains special characters"); }
+		if (!IsValidMinusWord(text)) { throw invalid_argument("Error in query"); }
 		if (text[0] == '-') {
 			is_minus = true;
 			text = text.substr(1);
 		}
 		return { text, is_minus, IsStopWord(text) };
-
 	}
 
 	struct Query {
@@ -337,30 +321,38 @@ int main() {
 	// Проверка стоп-слов на спец-символы
 	try {
 		SearchServer search_server("и в \x12на"s);
-	}catch(const invalid_argument& error){
-		cout << "Error: " << error.what() << endl; }
+	}
+	catch (const invalid_argument& error) {
+		cout << "Error: " << error.what() << endl;
+	}
 
 	// Проверка id меньше 0
 	try {
 		SearchServer search_server("и в на"s);
 		search_server.AddDocument(-1, "пушистый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 1, 2 });
-	}catch(const invalid_argument& error){
-		cout << "Error: " << error.what() << endl; }
+	}
+	catch (const invalid_argument& error) {
+		cout << "Error: " << error.what() << endl;
+	}
 
 	// Проверка на повторяющиеся id
 	try {
 		SearchServer search_server("и в на"s);
 		search_server.AddDocument(0, "пушистый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 1, 2 });
 		search_server.AddDocument(0, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-	}catch(const invalid_argument& error){
-		cout << "Error: " << error.what() << endl; }
-	
+	}
+	catch (const invalid_argument& error) {
+		cout << "Error: " << error.what() << endl;
+	}
+
 	// Проверка документа на спец-символы
 	try {
 		SearchServer search_server("и в на"s);
 		search_server.AddDocument(0, "пушистый кот и модн\x12ый ошейник"s, DocumentStatus::ACTUAL, { 1, 2 });
-	}catch(const invalid_argument& error){
-		cout << "Error: " << error.what() << endl; }
+	}
+	catch (const invalid_argument& error) {
+		cout << "Error: " << error.what() << endl;
+	}
 
 	// Проверка на спец символе в поисковом запросе
 	try {
@@ -374,7 +366,7 @@ int main() {
 	catch (const invalid_argument& error) {
 		cout << "Error: " << error.what() << endl;
 	}
-	
+
 	// Проверка на "--" и "иван-чай"
 	try {
 		SearchServer search_server("и в на"s);
@@ -390,7 +382,7 @@ int main() {
 	catch (const invalid_argument& error) {
 		cout << "Error: " << error.what() << endl;
 	}
-	
+
 	// Проверка на пустоту
 	try {
 		SearchServer search_server("и в на"s);
