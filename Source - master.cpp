@@ -319,10 +319,10 @@ class Paginator {
 public:
     Paginator(Iterator begin, Iterator end, size_t page_size) {
         for (size_t position = distance(begin, end); position > 0;) {
-            const size_t new_page_size = min(page_size, position);
-            const Iterator new_end = next(begin, new_page_size);
+            const size_t tmp_page_size = min(page_size, position);
+            const Iterator new_end = next(begin, tmp_page_size);
             pages_.push_back({ begin, new_end });
-            position -= new_page_size;
+            position -= tmp_page_size;
             begin = new_end;
         }
     }
