@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <deque>
 #include <vector>
 
 using namespace std;
@@ -89,22 +90,17 @@ enum class DocumentStatus {
 class SearchServer {
 public:
     template <typename StringContainer>
-    explicit SearchServer(const StringContainer& stop_words)
-        : stop_words_(MakeUniqueNonEmptyStrings(stop_words))  // Extract non-empty stop words
+    explicit SearchServer(const StringContainer& stop_words) : stop_words_(MakeUniqueNonEmptyStrings(stop_words)) // Extract non-empty stop words 
     {
         if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
             throw invalid_argument("Some of stop words are invalid"s);
         }
     }
 
-    explicit SearchServer(const string& stop_words_text)
-        : SearchServer(
-            SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
-    {
-    }
+    explicit SearchServer(const string& stop_words_text) : SearchServer( SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
+    { }
 
-    void AddDocument(int document_id, const string& document, DocumentStatus status,
-        const vector<int>& ratings) {
+    void AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
         if ((document_id < 0) || (documents_.count(document_id) > 0)) {
             throw invalid_argument("Invalid document_id"s);
         }
@@ -119,8 +115,7 @@ public:
     }
 
     template <typename DocumentPredicate>
-    vector<Document> FindTopDocuments(const string& raw_query,
-        DocumentPredicate document_predicate) const {
+    vector<Document> FindTopDocuments(const string& raw_query,  DocumentPredicate document_predicate) const {
         const auto query = ParseQuery(raw_query);
 
         auto matched_documents = FindAllDocuments(query, document_predicate);
@@ -351,19 +346,77 @@ auto Paginate(const Container& c, size_t page_size) {
     return Paginator(begin(c), end(c), page_size);
 }
 
-int main() {
-    SearchServer search_server("and with"s);
-    search_server.AddDocument(1, "funny pet and nasty rat"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-    search_server.AddDocument(2, "funny pet with curly hair"s, DocumentStatus::ACTUAL, { 1, 2, 3 });
-    search_server.AddDocument(3, "big cat nasty hair"s, DocumentStatus::ACTUAL, { 1, 2, 8 });
-    search_server.AddDocument(4, "big dog cat Vladislav"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
-    search_server.AddDocument(5, "big dog hamster Borya"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
-    const vector<Document> search_results = search_server.FindTopDocuments("curly dog"s);
-    int page_size = 2;
-    const auto pages = Paginate(search_results, page_size);
-    // Выводим найденные документы по страницам
-    for (auto page = pages.begin(); page != pages.end(); ++page) {
-        cout << *page << endl;
-        cout << "Page break"s << endl;
+class RequestQueue {
+public:
+    explicit RequestQueue(const SearchServer& search_server) 
+        : search_server_(search_server)
+    { }
+    
+    template <typename DocumentPredicate>
+    vector<Document> AddFindRequest(const string& raw_query, DocumentPredicate document_predicate) {
+        const auto result = search_server_.FindTopDocuments(raw_query, document_predicate);
+        AddRequest(result.size());
+        return result;
     }
+
+    vector<Document> AddFindRequest(const string& raw_query, DocumentStatus status) {
+        const auto result = search_server_.FindTopDocuments(raw_query, status);
+        AddRequest(result.size());
+        return result;
+    }
+
+    vector<Document> AddFindRequest(const string& raw_query) {
+        const auto result = search_server_.FindTopDocuments(raw_query);
+        AddRequest(result.size());
+        return result;
+    }
+
+    int GetNoResultRequests() const {
+        return no_results_requests_;
+    }
+
+private:
+    struct QueryResult {
+        uint64_t time_create;
+        int results;
+    };
+    deque<QueryResult> requests_;
+    const static int min_in_day_ = 1440;
+    uint64_t  current_time_ = 0;
+    int no_results_requests_ = 0;
+    const SearchServer& search_server_;
+
+    void AddRequest(int result_size) {
+        ++current_time_;
+        requests_.push_back({ current_time_, result_size });
+        if (result_size == 0) { ++no_results_requests_; }
+        if (current_time_ > min_in_day_) {
+            requests_.pop_front();
+            if (requests_.front().results == 0) {
+                --no_results_requests_;
+            }
+        }
+    }
+};
+
+int main() {
+    SearchServer search_server("and in at"s);
+    RequestQueue request_queue(search_server);
+    search_server.AddDocument(1, "curly cat curly tail"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
+    search_server.AddDocument(2, "curly dog and fancy collar"s, DocumentStatus::ACTUAL, { 1, 2, 3 });
+    search_server.AddDocument(3, "big cat fancy collar "s, DocumentStatus::ACTUAL, { 1, 2, 8 });
+    search_server.AddDocument(4, "big dog sparrow Eugene"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
+    search_server.AddDocument(5, "big dog sparrow Vasiliy"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
+    // 1439 запросов с нулевым результатом
+    for (int i = 0; i < 1439; ++i) {
+        request_queue.AddFindRequest("empty request"s);
+    }
+    // все еще 1439 запросов с нулевым результатом
+    request_queue.AddFindRequest("curly dog"s);
+    // новые сутки, первый запрос удален, 1438 запросов с нулевым результатом
+    request_queue.AddFindRequest("big collar"s);
+    // первый запрос удален, 1437 запросов с нулевым результатом
+    request_queue.AddFindRequest("sparrow"s);
+    cout << "Total empty requests: "s << request_queue.GetNoResultRequests() << endl;
+    return 0;
 }
