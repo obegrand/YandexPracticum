@@ -120,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,20 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="document.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="read_input_functions.cpp" />
-    <ClCompile Include="request_queue.cpp" />
-    <ClCompile Include="search_server.cpp" />
-    <ClCompile Include="string_processing.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="document.h" />
-    <ClInclude Include="paginator.h" />
-    <ClInclude Include="read_input_functions.h" />
-    <ClInclude Include="request_queue.h" />
-    <ClInclude Include="search_server.h" />
-    <ClInclude Include="string_processing.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

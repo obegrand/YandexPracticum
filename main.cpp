@@ -1,47 +1,65 @@
-#include "document.h"
-#include "paginator.h"
-#include "read_input_functions.h"
-#include "string_processing.h"
-#include "search_server.h"
-#include "request_queue.h"
+#include <chrono>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
 
 using namespace std;
+using namespace chrono;
+
+vector<int> ReverseVector(const vector<int>& source_vector) {
+    vector<int> res;
+    for (int i : source_vector) {
+        res.insert(res.begin(), i);
+    }
+    return res;
+}
+
+int CountPops(const vector<int>& source_vector, int begin, int end) {
+    int res = 0;
+    for (int i = begin; i < end; ++i) {
+        if (source_vector[i]) {
+            ++res;
+        }
+    }
+    return res;
+}
+
+void AppendRandom(vector<int>& v, int n) {
+    for (int i = 0; i < n; ++i) {
+        v.push_back(rand() % 2);
+    }
+}
+
+void Operate() {
+    vector<int> random_bits;
+    static const int N = 1 << 17;
+
+    {
+        const auto start_time = steady_clock::now();
+        AppendRandom(random_bits, N);
+        const auto end_time = steady_clock::now();
+        const auto dur = end_time - start_time;
+        cerr << "Append random: "s << chrono::duration_cast<chrono::milliseconds>(dur).count() << " ms"s << endl;
+    }
+    const auto start_time = steady_clock::now();
+    vector<int> reversed_bits = ReverseVector(random_bits);
+    const auto end_time = steady_clock::now();
+    const auto dur = end_time - start_time;
+    cerr << "Reverse: "s << chrono::duration_cast<chrono::milliseconds>(dur).count() << " ms"s << endl;
+
+    {
+        const auto start_time = steady_clock::now();
+        for (int i = 1, step = 1; i <= N; i += step, step *= 2) {
+            double rate = CountPops(reversed_bits, 0, i) * 100. / i;
+            cout << "After "s << i << " bits we found "s << rate << "% pops"s << endl;
+        }
+        const auto end_time = steady_clock::now();
+        const auto dur = end_time - start_time;
+        cerr << "Counting: "s << chrono::duration_cast<chrono::milliseconds>(dur).count() << " ms"s << endl;
+    }
+}
 
 int main() {
-    setlocale(LC_ALL, "Russian");
-
-    SearchServer search_server("and in at"s);
-    RequestQueue request_queue(search_server);
-
-    search_server.AddDocument(1, "Blackwood cat curly tail"s, DocumentStatus::BANNED, { 7, 2, 7 });
-    search_server.AddDocument(2, "giant dog and fancy filled"s, DocumentStatus::ACTUAL, { 1, 2, 3 });
-    search_server.AddDocument(3, "big filled Blackwood collar "s, DocumentStatus::ACTUAL, { 1, 2, 8 });
-    search_server.AddDocument(4, "Lord giant Blackwood"s, DocumentStatus::BANNED, { 1, 3, 2 });
-    search_server.AddDocument(5, "big dog filled Vasiliy"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
-    search_server.AddDocument(6, "Blackwood into a mysterious and dangerous world"s, DocumentStatus::BANNED, { 7, 2, 7 });
-    search_server.AddDocument(7, "filled with giant Blackwood"s, DocumentStatus::ACTUAL, { 1, 2, 3 });
-    search_server.AddDocument(8, "Lord giant Blackwood "s, DocumentStatus::ACTUAL, { 1, 2, 8 });
-    search_server.AddDocument(9, "treaty Blackwood to giant and believes"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
-    search_server.AddDocument(10, "The story giant"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
-    search_server.AddDocument(11, "Blackwood Lucien Thornbear 2"s, DocumentStatus::ACTUAL, { 1, 2, 8 });
-    search_server.AddDocument(12, "Prince Lucien Thornbear"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
-    search_server.AddDocument(13, "Prince Lucien Thornbear"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
-
-    auto result = search_server.FindTopDocuments("filled with giant Blackwood");
-    for (auto& r : result) {
-        cout << r << endl;
-    }
-    cout << "-------------------" << endl;
-    auto result2 = search_server.FindTopDocuments("filled with giant Blackwood Eugene", DocumentStatus::BANNED);
-    for (auto& r : result2) {
-        cout << r << endl;
-    }
-    cout << "-------------------" << endl;
-    auto result3 = search_server.FindTopDocuments("filled with giant Blackwood Eugene",
-        [](int document_id, DocumentStatus document_status, int rating) {
-            return rating > 2; });
-    for (auto& r : result3) {
-        cout << r << endl;
-    }
+    Operate();
     return 0;
 }
