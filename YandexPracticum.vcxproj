@@ -133,6 +133,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="compressor.h" />
+    <ClInclude Include="decompressor.h" />
     <ClInclude Include="log_duration.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
