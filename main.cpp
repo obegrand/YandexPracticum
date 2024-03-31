@@ -1,36 +1,42 @@
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <iostream>
+#include <random>
+#include <vector>
 
 using namespace std;
 
-template <typename F>
-int FindFloor(int last, F drop, int first = 1) {
-	if (last - first <=2) {
-		if (drop((last + first) / 2)) {
-			return last-1;
-		}
-		else {
-			return last;
-		}
-	}
-	if (drop((last + first) / 2)) {
-		FindFloor(last / 2 + first / 2, drop, first);
-	}
-	else {
-		FindFloor(last, drop, last / 2 + first / 2);
-	}
+int EffectiveCount(const vector<int>& v, int n, int i) {
+    auto border = static_cast<int64_t>(v.size()) * (i + 1) / (n + 1);
+    if (border <= log2(v.size())) {
+        cout << "Using find_if"s << endl;
+        auto it = find_if(v.begin(), v.end(), [i](int border) { return border > i; });
+        return it - v.begin();
+    }
+    else {
+        cout << "Using upper_bound"s << endl;
+        auto it = upper_bound(v.begin(), v.end(), i);
+        return it - v.begin();
+    }
 }
 
 int main() {
-	int t = 0;
-	do {
-		int n = 8;
-		++t;
-		int count = 0;
-		auto lambda = [t, &count](int f) { ++count; return f >= t; };
-		int found = FindFloor(n, lambda);
-		cout << "Need to floor "s << t     << endl;
-		cout << "Founded floor "s << found << " after "s << count << " drops"s << endl;
-		cout << endl;
-	} while (t != 8);
-	return 0;
+    static const int NUMBERS = 1'000'000;
+    static const int MAX = 1'000'000'000;
+    srand(time(NULL));
+    mt19937 r;
+    uniform_int_distribution<int> uniform_dist(0, MAX);
+
+    vector<int> nums;
+    for (int i = 0; i < NUMBERS; ++i) {
+        int random_number = uniform_dist(r);
+        nums.push_back(random_number);
+    }
+    sort(nums.begin(), nums.end());
+
+    int i=20000;
+    //cin >> i;
+    int result = EffectiveCount(nums, MAX, i);
+    cout << "Total numbers before "s << i << ": "s << result << endl;
 }
