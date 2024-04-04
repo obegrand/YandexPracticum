@@ -20,13 +20,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="log_duration.h">
+    <ClInclude Include="octopus.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="decompressor.h">
+    <ClInclude Include="scopedptr.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="compressor.h">
+    <ClInclude Include="ptrvector.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

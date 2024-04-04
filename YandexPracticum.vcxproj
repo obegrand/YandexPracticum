@@ -133,9 +133,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="compressor.h" />
-    <ClInclude Include="decompressor.h" />
-    <ClInclude Include="log_duration.h" />
+    <ClInclude Include="octopus.h" />
+    <ClInclude Include="ptrvector.h" />
+    <ClInclude Include="scopedptr.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

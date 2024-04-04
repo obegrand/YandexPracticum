@@ -1,42 +1,119 @@
 #include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <iostream>
-#include <random>
+#include <cassert>
 #include <vector>
 
 using namespace std;
 
-int EffectiveCount(const vector<int>& v, int n, int i) {
-    auto border = static_cast<int64_t>(v.size()) * (i + 1) / (n + 1);
-    if (border <= log2(v.size())) {
-        cout << "Using find_if"s << endl;
-        auto it = find_if(v.begin(), v.end(), [i](int border) { return border > i; });
-        return it - v.begin();
-    }
-    else {
-        cout << "Using upper_bound"s << endl;
-        auto it = upper_bound(v.begin(), v.end(), i);
-        return it - v.begin();
-    }
-}
+template <typename T>
+class PtrVector {
+public:
+    PtrVector() = default;
 
+    // Создаёт вектор указателей на копии объектов из other
+    PtrVector(const PtrVector& other) {
+        for (auto item : other.GetItems()) {
+            if (item == nullptr) {
+                items_.push_back(nullptr);
+            }
+            else {
+                T* item_copy = new T(*item);
+                items_.push_back(item_copy);
+            }
+        }
+    }
+
+    // Деструктор удаляет объекты в куче, на которые ссылаются указатели,
+    // в векторе items_
+    ~PtrVector() {
+        for (T* item : items_) {
+            delete item;
+        }
+    }
+
+    // Возвращает ссылку на вектор указателей
+    vector<T*>& GetItems() noexcept {
+        return items_;
+    }
+
+    // Возвращает константную ссылку на вектор указателей
+    vector<T*> const& GetItems() const noexcept {
+        return items_;
+    }
+
+private:
+    vector<T*> items_;
+};
+
+// Эта функция main тестирует шаблон класса PtrVector
 int main() {
-    static const int NUMBERS = 1'000'000;
-    static const int MAX = 1'000'000'000;
-    srand(time(NULL));
-    mt19937 r;
-    uniform_int_distribution<int> uniform_dist(0, MAX);
+    // Вспомогательный "шпион", позволяющий узнать о своём удалении
+    struct DeletionSpy {
+        explicit DeletionSpy(bool& is_deleted)
+            : is_deleted_(is_deleted) {
+        }
+        ~DeletionSpy() {
+            is_deleted_ = true;
+        }
+        bool& is_deleted_;
+    };
 
-    vector<int> nums;
-    for (int i = 0; i < NUMBERS; ++i) {
-        int random_number = uniform_dist(r);
-        nums.push_back(random_number);
+    // Проверяем удаление элементов
+    {
+        bool spy1_is_deleted = false;
+        DeletionSpy* ptr1 = new DeletionSpy(spy1_is_deleted);
+        {
+            PtrVector<DeletionSpy> ptr_vector;
+            ptr_vector.GetItems().push_back(ptr1);
+            assert(!spy1_is_deleted);
+
+            // Константная ссылка на ptr_vector
+            const auto& const_ptr_vector_ref(ptr_vector);
+            // И константная, и неконстантная версия GetItems
+            // должны вернуть ссылку на один и тот же вектор
+            assert(&const_ptr_vector_ref.GetItems() == &ptr_vector.GetItems());
+        }
+        // При разрушении ptr_vector должен удалить все объекты, на которые
+        // ссылаются находящиеся внутри него указателели
+        assert(spy1_is_deleted);
     }
-    sort(nums.begin(), nums.end());
 
-    int i=20000;
-    //cin >> i;
-    int result = EffectiveCount(nums, MAX, i);
-    cout << "Total numbers before "s << i << ": "s << result << endl;
+    // Вспомогательный «шпион», позволяющий узнать о своём копировании
+    struct CopyingSpy {
+        explicit CopyingSpy(int& copy_count)
+            : copy_count_(copy_count) {
+        }
+        CopyingSpy(const CopyingSpy& rhs)
+            : copy_count_(rhs.copy_count_)  //
+        {
+            ++copy_count_;
+        }
+        int& copy_count_;
+    };
+
+    // Проверяем копирование элементов при копировании массива указателей
+    {
+        // 10 элементов
+        vector<int> copy_counters(10);
+
+        PtrVector<CopyingSpy> ptr_vector;
+        // Подготавливаем оригинальный массив указателей
+        for (auto& counter : copy_counters) {
+            ptr_vector.GetItems().push_back(new CopyingSpy(counter));
+        }
+        // Последний элемент содержит нулевой указатель
+        ptr_vector.GetItems().push_back(nullptr);
+
+        auto ptr_vector_copy(ptr_vector);
+        // Количество элементов в копии равно количеству элементов оригинального вектора
+        assert(ptr_vector_copy.GetItems().size() == ptr_vector.GetItems().size());
+
+        // копия должна хранить указатели на новые объекты
+        assert(ptr_vector_copy.GetItems() != ptr_vector.GetItems());
+        // Последний элемент исходного массива и его копии - нулевой указатель
+        assert(ptr_vector_copy.GetItems().back() == nullptr);
+        // Проверяем, что элементы были скопированы (копирующие шпионы увеличивают счётчики копий).
+        assert(all_of(copy_counters.begin(), copy_counters.end(), [](int counter) {
+            return counter == 1;
+            }));
+    }
 }
