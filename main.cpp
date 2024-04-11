@@ -1,9 +1,9 @@
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -33,7 +33,6 @@ class SingleLinkedList {
 		using reference = ValueType&;
 
 		BasicIterator() = default;
-
 		BasicIterator(const BasicIterator<Type>& other) noexcept : node_(other.node_) { }
 
 		BasicIterator& operator=(const BasicIterator& rhs) = default;
@@ -113,6 +112,16 @@ public:
 		return before_begin();
 	}
 
+	[[nodiscard]] Iterator before_begin() noexcept {
+		return Iterator{ &head_ };
+	}
+	[[nodiscard]] ConstIterator before_begin() const noexcept {
+		return ConstIterator{ const_cast<Node*>(&head_) };
+	}
+	[[nodiscard]] ConstIterator cbefore_begin() const noexcept {
+		return before_begin();
+	}
+
 	[[nodiscard]] Iterator begin() noexcept {
 		return Iterator{ head_.next_node };
 	}
@@ -153,19 +162,19 @@ public:
 		++size_;
 	}
 
+	void PopFront() noexcept {
+		auto next_node = head_.next_node->next_node;
+		delete head_.next_node;
+		head_.next_node = next_node;
+		--size_;
+	}
+
 	Iterator InsertAfter(ConstIterator pos, const Type& value) {
 		assert(pos.node_ != nullptr);
 
 		pos.node_->next_node = new Node(value, pos.node_->next_node);
 		++size_;
 		return Iterator{ pos.node_->next_node };
-	}
-
-	void PopFront() noexcept {
-		auto next_node = head_.next_node->next_node;
-		delete head_.next_node;
-		head_.next_node = next_node;
-		--size_;
 	}
 
 	Iterator EraseAfter(ConstIterator pos) noexcept {
@@ -238,13 +247,6 @@ bool operator>(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& 
 template <typename Type>
 bool operator>=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
 	return (lhs > rhs || lhs == rhs);
-}
-
-void PrintSingleLinkedList(SingleLinkedList<int>& list) {
-	for (auto node : list) {
-		std::cout << node << " ";
-	}
-	std::cout << std::endl;
 }
 
 // Эти функция тестирует работу SingleLinkedList
@@ -815,14 +817,8 @@ void Test4() {
 
 int main() {
 	Test0();
-	std::cout << "Test 0: OK" << std::endl;
 	Test1();
-	std::cout << "Test 1: OK" << std::endl;
 	Test2();
-	std::cout << "Test 2: OK" << std::endl;
 	Test3();
-	std::cout << "Test 3: OK" << std::endl;
 	Test4();
-	std::cout << "Test 4: OK" << std::endl;
-
 }
