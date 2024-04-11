@@ -34,7 +34,6 @@ class SingleLinkedList {
 
 		BasicIterator() = default;
 		BasicIterator(const BasicIterator<Type>& other) noexcept : node_(other.node_) { }
-
 		BasicIterator& operator=(const BasicIterator& rhs) = default;
 
 		[[nodiscard]] bool operator==(const BasicIterator<const Type>& rhs) const noexcept {
@@ -100,16 +99,6 @@ public:
 	}
 	~SingleLinkedList() {
 		Clear();
-	}
-
-	[[nodiscard]] Iterator before_begin() noexcept {
-		return Iterator{ &head_ };
-	}
-	[[nodiscard]] ConstIterator before_begin() const noexcept {
-		return ConstIterator{ const_cast<Node*>(&head_) };
-	}
-	[[nodiscard]] ConstIterator cbefore_begin() const noexcept {
-		return before_begin();
 	}
 
 	[[nodiscard]] Iterator before_begin() noexcept {
