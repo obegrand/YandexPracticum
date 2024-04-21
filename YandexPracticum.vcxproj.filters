@@ -23,10 +23,13 @@
     <ClInclude Include="log_duration.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="my_assert.h">
+    <ClInclude Include="array_ptr.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="stack_vector.h">
+    <ClInclude Include="simple_vector.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="tests.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

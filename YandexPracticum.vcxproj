@@ -133,9 +133,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="array_ptr.h" />
     <ClInclude Include="log_duration.h" />
-    <ClInclude Include="my_assert.h" />
-    <ClInclude Include="stack_vector.h" />
+    <ClInclude Include="simple_vector.h" />
+    <ClInclude Include="tests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
