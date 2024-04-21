@@ -1,7 +1,6 @@
 #pragma once
 #include <cassert>
 #include <stdexcept>
-#include <iostream>
 
 inline void Test1() {
     // Инициализация конструктором по умолчанию
@@ -79,12 +78,12 @@ inline void Test1() {
         SimpleVector<int> v(3);
         v[0] = 42;
         v[1] = 55;
-        /*const size_t old_capacity = v.GetCapacity();
+        const size_t old_capacity = v.GetCapacity();
         v.Resize(2);
         assert(v.GetSize() == 2);
         assert(v.GetCapacity() == old_capacity);
         assert(v[0] == 42);
-        assert(v[1] == 55);*/
+        assert(v[1] == 55);
     }
     {
         const size_t old_size = 3;
@@ -219,16 +218,5 @@ inline void Test2() {
         SimpleVector<int> v{ 1, 2, 3, 4 };
         v.Erase(v.cbegin() + 2);
         assert((v == SimpleVector<int>{1, 2, 4}));
-    }
-}
-
-inline void Test3() {
-    // Вставка элементов
-    {
-        SimpleVector<int> v{ 1, 2, 3, 4 };
-        auto it = (v.Insert(v.begin() + 2, 42));
-        std::cout << *(v.Insert(it, 52));
-
-        assert((v == SimpleVector<int>{1, 2, 52, 42, 3, 4}));
     }
 }

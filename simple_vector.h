@@ -7,6 +7,22 @@
 #include <initializer_list>
 #include <stdexcept>
 
+// класс-обёртка для работы функции Reserve
+class ReserveProxyObj {
+public:
+	ReserveProxyObj(size_t capacity)
+		: capacity_(capacity)
+	{
+	}
+
+	size_t GetCapacity() {
+		return capacity_;
+	}
+
+private:
+	size_t capacity_;
+};
+
 template <typename Type>
 class SimpleVector {
 public:
@@ -41,6 +57,12 @@ public:
 			capacity_ = rhs.GetCapacity();
 		}
 		return *this;
+	}
+
+	// Конструктор с вызовом функции Reserve
+	explicit SimpleVector(ReserveProxyObj obj)
+	{
+		Reserve(obj.GetCapacity());
 	}
 
 	// Возвращает количество элементов в массиве
@@ -108,7 +130,6 @@ public:
 		}
 	}
 
-
 	// Добавляет элемент в конец вектора
 	// При нехватке места увеличивает вдвое вместимость вектора
 	void PushBack(const Type& item) {
@@ -166,6 +187,15 @@ public:
 		items_.swap(other.items_);
 	}
 
+	void Reserve(size_t new_capacity) {
+		if (new_capacity > capacity_) {
+			ArrayPtr<Type> temp(new_capacity);
+			std::copy(items_.Get(), items_.Get() + size_, temp.Get());
+			items_.swap(temp);
+			capacity_ = new_capacity;
+		}
+	}
+
 	// Возвращает итератор на начало массива
 	// Для пустого массива может быть равен (или не равен) nullptr
 	Iterator begin() noexcept {
@@ -206,6 +236,10 @@ private:
 	size_t size_ = 0;
 	size_t capacity_ = 0;
 };
+
+ReserveProxyObj Reserve(size_t capacity_to_reserve) {
+	return ReserveProxyObj(capacity_to_reserve);
+}
 
 template <typename Type>
 inline bool operator==(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs) {
