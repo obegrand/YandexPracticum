@@ -10,10 +10,7 @@
 // класс-обёртка для работы функции Reserve
 class ReserveProxyObj {
 public:
-	ReserveProxyObj(size_t capacity)
-		: capacity_(capacity)
-	{
-	}
+	ReserveProxyObj(size_t capacity) : capacity_(capacity) { }
 
 	size_t GetCapacity() {
 		return capacity_;

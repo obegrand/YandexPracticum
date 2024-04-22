@@ -1,10 +1,8 @@
-#include "simple_vector.h"
+#include "log_duration.h"
 
 // Tests
-#include "tests.h"
-
 #include "simple_vector.h"
-
+#include "tests.h"
 #include <cassert>
 #include <iostream>
 
@@ -48,6 +46,7 @@ void TestReserveMethod() {
 }
 
 int main() {
+    LOG_DURATION("main");
     TestReserveConstructor();
     TestReserveMethod();
 }
