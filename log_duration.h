@@ -20,6 +20,15 @@ public:
         , dst_stream_(dst_stream) {
     }
 
+    long long GetTime() {
+        using namespace std::chrono;
+        using namespace std::literals;
+
+        const auto end_time = Clock::now();
+        const auto dur = end_time - start_time_;
+        return duration_cast<milliseconds>(dur).count();
+    }
+
     ~LogDuration() {
         using namespace std::chrono;
         using namespace std::literals;
