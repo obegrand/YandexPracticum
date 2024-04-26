@@ -26,6 +26,22 @@ public:
     // Запрещаем копирование
     ArrayPtr(const ArrayPtr&) = delete;
 
+    // Конструктор перемещения
+    ArrayPtr(ArrayPtr&& other) noexcept
+        : raw_ptr_(other.raw_ptr_) {
+        other.raw_ptr_ = nullptr;
+    }
+
+    // Оператор присваивания перемещением
+    ArrayPtr& operator=(ArrayPtr&& other) noexcept {
+        if (this != &other) {
+            delete[] raw_ptr_; // Освободить текущий ресурс
+            raw_ptr_ = other.raw_ptr_; // Переместить указатель
+            other.raw_ptr_ = nullptr; // Обнулить указатель в перемещаемом объекте
+        }
+        return *this;
+    }
+
     ~ArrayPtr() {
         delete[] raw_ptr_;
     }
