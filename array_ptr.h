@@ -11,7 +11,6 @@ public:
     ArrayPtr() = default;
 
     // Создаёт в куче массив из size элементов типа Type.
-    // Если size == 0, поле raw_ptr_ должно быть равно nullptr
     explicit ArrayPtr(size_t size) {
         if (size == 0) raw_ptr_ = nullptr;
         else raw_ptr_ = new Type[size];
