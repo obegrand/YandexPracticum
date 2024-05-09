@@ -1,204 +1,243 @@
-#include "simple_vector.h"
-#include "log_duration.h"
-
+#include <array>
 #include <cassert>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
-#include <numeric>
+#include <sstream>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 
-//#define DEBUG
+//class ParkingCounter {
+//public:
+//    void Park(VehiclePlate car) {
+//        ++car_to_parks_[car];
+//    }
+// 
+//    int GetCount(const VehiclePlate& car) const {
+//        if (!car_to_parks_.contains(car)) 
+//            return {};
+//        return car_to_parks_.at(car);
+//    }
+//
+//    auto& GetAllData() const {
+//        return car_to_parks_;
+//    }
+//
+//private:
+//    unordered_map<VehiclePlate, int, VehiclePlateHasher> car_to_parks_;
+//};
 
-class X {
-public:
-	X()
-		: X(5) {
-	}
-	X(size_t num)
-		: x_(num) {
-	}
-	X(const X& other) = delete;
-	X& operator=(const X& other) = delete;
-	X(X&& other) {
-		x_ = exchange(other.x_, 0);
-	}
-	X& operator=(X&& other) {
-		x_ = exchange(other.x_, 0);
-		return *this;
-	}
-	size_t GetX() const {
-		return x_;
-	}
-
+class VehiclePlate {
 private:
-	size_t x_;
+    auto AsTuple() const {
+        return tie(letters_, digits_, region_);
+    }
+
+public:
+    bool operator==(const VehiclePlate& other) const {
+        return AsTuple() == other.AsTuple();
+    }
+
+    VehiclePlate(char l0, char l1, int digits, char l2, int region)
+        : letters_{ l0, l1, l2 }
+        , digits_(digits)
+        , region_(region) {
+    }
+
+    string ToString() const {
+        ostringstream out;
+        out << letters_[0] << letters_[1];
+        out << setfill('0') << right << setw(3) << digits_;
+        out << letters_[2] << setw(2) << region_;
+
+        return out.str();
+    }
+
+    int Hash() const {
+        return digits_;
+    }
+private:
+    array<char, 3> letters_;
+    int digits_;
+    int region_;
 };
 
-SimpleVector<int> GenerateVector(size_t size) {
-	SimpleVector<int> v(size);
-	iota(v.begin(), v.end(), 1);
-	return v;
+ostream& operator<<(ostream& out, VehiclePlate plate) {
+    out << plate.ToString();
+    return out;
 }
 
-void TestTemporaryObjConstructor() {
-	const size_t size = 1000000;
-#ifdef DEBUG	
-	cout << "Test with temporary object, copy elision" << endl;
-#endif DEBUG
-	SimpleVector<int> moved_vector(GenerateVector(size));
-	assert(moved_vector.GetSize() == size);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+class VehiclePlateHasher {
+public:
+    size_t operator()(const VehiclePlate& plate) const {
+        return static_cast<size_t>(hasher_(plate.ToString()));
+    }
+private:
+    hash<string> hasher_;
+};
 
-void TestTemporaryObjOperator() {
-	const size_t size = 1000000;
-#ifdef DEBUG
-	cout << "Test with temporary object, operator=" << endl;
-#endif DEBUG
-	SimpleVector<int> moved_vector;
-	assert(moved_vector.GetSize() == 0);
-	moved_vector = GenerateVector(size);
-	assert(moved_vector.GetSize() == size);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+struct ParkingException {};
 
-void TestNamedMoveConstructor() {
-	const size_t size = 1000000;
-#ifdef DEBUG
-	cout << "Test with named object, move constructor" << endl;
-#endif DEBUG
-	SimpleVector<int> vector_to_move(GenerateVector(size));
-	assert(vector_to_move.GetSize() == size);
+template <typename Clock>
+class Parking {
+    using Duration = typename Clock::duration;
+    using TimePoint = typename Clock::time_point;
 
-	SimpleVector<int> moved_vector(move(vector_to_move));
-	assert(moved_vector.GetSize() == size);
-	assert(vector_to_move.GetSize() == 0);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+public:
+    Parking(int cost_per_second) : cost_per_second_(cost_per_second) {}
 
-void TestNamedMoveOperator() {
-	const size_t size = 1000000;
-#ifdef DEBUG
-	cout << "Test with named object, operator=" << endl;
-#endif DEBUG
-	SimpleVector<int> vector_to_move(GenerateVector(size));
-	assert(vector_to_move.GetSize() == size);
+    // запарковать машину с указанным номером
+    void Park(VehiclePlate car) {
+        if (now_parked_.contains(car)) throw ParkingException();
 
-	SimpleVector<int> moved_vector = move(vector_to_move);
-	assert(moved_vector.GetSize() == size);
-	assert(vector_to_move.GetSize() == 0);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+        now_parked_[car] = Clock::now();
+    }
 
-void TestNoncopiableMoveConstructor() {
-	const size_t size = 5;
-#ifdef DEBUG
-	cout << "Test noncopiable object, move constructor" << endl;
-#endif DEBUG
-	SimpleVector<X> vector_to_move;
-	for (size_t i = 0; i < size; ++i) {
-		vector_to_move.PushBack(X(i));
-	}
+    // забрать машину с указанным номером
+    void Withdraw(const VehiclePlate& car) {
+        if (!now_parked_.contains(car)) throw ParkingException();
 
-	SimpleVector<X> moved_vector = move(vector_to_move);
-	assert(moved_vector.GetSize() == size);
-	assert(vector_to_move.GetSize() == 0);
+        TimePoint end = Clock::now();
+        complete_parks_[car] = end - now_parked_[car];
+        now_parked_.erase(car);
+    }
 
-	for (size_t i = 0; i < size; ++i) {
-		assert(moved_vector[i].GetX() == i);
-	}
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+    // получить счёт за конкретный автомобиль
+    int64_t GetCurrentBill(const VehiclePlate& car) const {
+        int64_t result = 0;
 
-void TestNoncopiablePushBack() {
-	const size_t size = 5;
-#ifdef DEBUG
-	cout << "Test noncopiable push back" << endl;
-#endif DEBUG
-	SimpleVector<X> v;
-	for (size_t i = 0; i < size; ++i) {
-		v.PushBack(X(i));
-	}
+        if (!now_parked_.contains(car) && !complete_parks_.contains(car))
+            return result;
+        if (now_parked_.contains(car)) {
+            result += chrono::duration_cast<chrono::seconds>(Clock::now() - now_parked_.at(car)).count() * cost_per_second_;
+        }
+        if (complete_parks_.contains(car)) {
+            result += chrono::duration_cast<chrono::seconds>(complete_parks_.at(car)).count() * cost_per_second_;
+        }
 
-	assert(v.GetSize() == size);
+        return result;
+    }
 
-	for (size_t i = 0; i < size; ++i) {
-		assert(v[i].GetX() == i);
-	}
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+    // завершить расчётный период
+    // те машины, которые находятся на парковке на данный момент, должны 
+    // остаться на парковке, но отсчёт времени для них начинается с нуля
+    unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> EndPeriodAndGetBills() {
+        unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> result;
 
-void TestNoncopiableInsert() {
-	const size_t size = 5;
-#ifdef DEBUG
-	cout << "Test noncopiable insert" << endl;
-#endif DEBUG
-	SimpleVector<X> v;
-	for (size_t i = 0; i < size; ++i) {
-		v.PushBack(X(i));
-	}
+        for (auto [car, start_parking] : now_parked_) {
+            Duration duration = Clock::now() - now_parked_.at(car);
+            result[car] += chrono::duration_cast<chrono::seconds>(duration).count() * cost_per_second_;
+            now_parked_[car] = Clock::now();
+        }
+        for (auto [car, duration] : complete_parks_) {
+            result[car] += chrono::duration_cast<chrono::seconds>(duration).count() * cost_per_second_;
+        }
+        complete_parks_.clear();
 
-	// в начало
-	v.Insert(v.begin(), X(size + 1));
-	assert(v.GetSize() == size + 1);
-	assert(v.begin()->GetX() == size + 1);
-	// в конец
-	v.Insert(v.end(), X(size + 2));
-	assert(v.GetSize() == size + 2);
-	assert((v.end() - 1)->GetX() == size + 2);
-	// в середину
-	v.Insert(v.begin() + 3, X(size + 3));
-	assert(v.GetSize() == size + 3);
-	assert((v.begin() + 3)->GetX() == size + 3);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+        return result;
+    }
 
-void TestNoncopiableErase() {
-	const size_t size = 3;
-#ifdef DEBUG
-	cout << "Test noncopiable erase" << endl;
-#endif DEBUG
-	SimpleVector<X> v;
-	for (size_t i = 0; i < size; ++i) {
-		v.PushBack(X(i));
-	}
+    // не меняйте этот метод
+    auto& GetNowParked() const {
+        return now_parked_;
+    }
 
-	auto it = v.Erase(v.begin());
-	assert(it->GetX() == 1);
-#ifdef DEBUG
-	cout << "Done!" << endl << endl;
-#endif DEBUG
-}
+    // не меняйте этот метод
+    auto& GetCompleteParks() const {
+        return complete_parks_;
+    }
+
+private:
+    int cost_per_second_;
+    unordered_map<VehiclePlate, TimePoint, VehiclePlateHasher> now_parked_;
+    unordered_map<VehiclePlate, Duration, VehiclePlateHasher> complete_parks_;
+};
+
+// эти часы удобно использовать для тестирования
+// они покажут столько времени, сколько вы задали явно
+class TestClock {
+public:
+    using time_point = chrono::system_clock::time_point;
+    using duration = chrono::system_clock::duration;
+
+    static void SetNow(int seconds) {
+        current_time_ = seconds;
+    }
+
+    static time_point now() {
+        return start_point_ + chrono::seconds(current_time_);
+    }
+
+private:
+    inline static time_point start_point_ = chrono::system_clock::now();
+    inline static int current_time_ = 0;
+};
 
 int main() {
-	long long time = 0;
-	size_t counts = 100;
-	for (size_t i = 0; i < counts; i++) {
-		LogDuration test("test "+to_string(i+1));
-		TestTemporaryObjConstructor();
-		TestTemporaryObjOperator();
-		TestNamedMoveConstructor();
-		TestNamedMoveOperator();
-		TestNoncopiableMoveConstructor();
-		TestNoncopiablePushBack();
-		TestNoncopiableInsert();
-		TestNoncopiableErase();
-		time += test.GetTime();
-	}
-	cout << "All time is: " << time << endl;
-	return 0;
+    Parking<TestClock> parking(10);
+
+    TestClock::SetNow(10);
+    parking.Park({ 'A', 'A', 111, 'A', 99 });
+
+    TestClock::SetNow(20);
+    parking.Withdraw({ 'A', 'A', 111, 'A', 99 });
+    parking.Park({ 'B', 'B', 222, 'B', 99 });
+
+    TestClock::SetNow(40);
+    assert(parking.GetCurrentBill({ 'A', 'A', 111, 'A', 99 }) == 100);
+    assert(parking.GetCurrentBill({ 'B', 'B', 222, 'B', 99 }) == 200);
+    parking.Park({ 'A', 'A', 111, 'A', 99 });
+
+    TestClock::SetNow(50);
+    assert(parking.GetCurrentBill({ 'A', 'A', 111, 'A', 99 }) == 200);
+    assert(parking.GetCurrentBill({ 'B', 'B', 222, 'B', 99 }) == 300);
+    assert(parking.GetCurrentBill({ 'C', 'C', 333, 'C', 99 }) == 0);
+    parking.Withdraw({ 'B', 'B', 222, 'B', 99 });
+
+    TestClock::SetNow(70);
+    {
+        // проверим счёт
+        auto bill = parking.EndPeriodAndGetBills();
+
+        // так как внутри макроса используется запятая,
+        // нужно заключить его аргумент в дополнительные скобки
+        assert((bill
+            == unordered_map<VehiclePlate, int64_t, VehiclePlateHasher>{
+                {{'A', 'A', 111, 'A', 99}, 400},
+                { {'B', 'B', 222, 'B', 99}, 300 },
+        }));
+    }
+
+    TestClock::SetNow(80);
+    {
+        // проверим счёт
+        auto bill = parking.EndPeriodAndGetBills();
+
+        // так как внутри макроса используется запятая,
+        // нужно заключить его аргумент в дополнительные скобки
+        assert((bill
+            == unordered_map<VehiclePlate, int64_t, VehiclePlateHasher>{
+                {{'A', 'A', 111, 'A', 99}, 100},
+        }));
+    }
+
+    try {
+        parking.Park({ 'A', 'A', 111, 'A', 99 });
+        assert(false);
+    }
+    catch (ParkingException) {
+    }
+
+    try {
+        parking.Withdraw({ 'B', 'B', 222, 'B', 99 });
+        assert(false);
+    }
+    catch (ParkingException) {
+    }
+
+    cout << "Success!"s << endl;
 }
