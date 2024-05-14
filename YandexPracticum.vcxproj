@@ -130,13 +130,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ini.cpp" />
+    <ClCompile Include="input_reader.cpp" />
+    <ClCompile Include="json.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stat_reader.cpp" />
+    <ClCompile Include="transport_catalogue.cpp" />
+    <ClCompile Include="xml.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="array_ptr.h" />
+    <ClInclude Include="geo.h" />
+    <ClInclude Include="ini.h" />
+    <ClInclude Include="input_reader.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="log_duration.h" />
-    <ClInclude Include="simple_vector.h" />
-    <ClInclude Include="tests.h" />
+    <ClInclude Include="stat_reader.h" />
+    <ClInclude Include="transport_catalogue.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
