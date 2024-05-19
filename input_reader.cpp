@@ -4,8 +4,10 @@
 #include <cassert>
 #include <iterator>
 
+namespace InputCommand {
+
 // Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
-Coordinates ParseCoordinates(std::string_view str) {
+Geo::Coordinates ParseCoordinates(std::string_view str) {
 	static const double nan = std::nan("");
 
 	auto not_space = str.find_first_not_of(' ');
@@ -96,21 +98,21 @@ void InputReader::ParseLine(std::string_view line) {
 }
 
 // Наполняет данными транспортный справочник, используя команды из commands_
-void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const {
-	for (CommandDescription cmd : commands_) {
-		if (cmd.command == "Stop") {
-			Stop stop{ cmd.id,ParseCoordinates(cmd.description) };
+void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue::TransportCatalogue& catalogue) const {
+	for (CommandDescription command : commands_) {
+		if (command.command == "Stop") {
+			TransportCatalogue::Stop stop{ command.id,ParseCoordinates(command.description) };
 			catalogue.Add(std::move(stop));
 		}
-		else if (cmd.command == "Bus") {
+		else if (command.command == "Bus") {
 			std::vector<std::string> route;
-			for (const auto& view : ParseRoute(cmd.description)) {
-				route.emplace_back(view.data(), view.size()); // Convert string_view to string
+			for (const auto& view : ParseRoute(command.description)) {
+				route.emplace_back(view.data(), view.size());
 			}
-			bool circular_route = 
-				cmd.description.end() != std::find(cmd.description.begin(), cmd.description.end(), '>');
-			Bus bus{ cmd.id, route, circular_route};
+			TransportCatalogue::Bus bus{ command.id, route};
 			catalogue.Add(std::move(bus));
 		}
 	}
 }
+
+} // namespace inputCommand

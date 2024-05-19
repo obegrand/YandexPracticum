@@ -7,13 +7,13 @@
 using namespace std;
 
 int main() {
-    TransportCatalogue catalogue;
+    TransportCatalogue::TransportCatalogue catalogue;
 
     int base_request_count;
     cin >> base_request_count >> ws;
 
     {
-        InputReader reader;
+        InputCommand::InputReader reader;
         for (int i = 0; i < base_request_count; ++i) {
             string line;
             getline(cin, line);
@@ -27,6 +27,6 @@ int main() {
     for (int i = 0; i < stat_request_count; ++i) {
         string line;
         getline(cin, line);
-        ParseAndPrintStat(catalogue, line, cout);
+        Statistic::ParseAndPrintStat(catalogue, line, cout);
     }
 }
