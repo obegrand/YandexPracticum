@@ -10,9 +10,7 @@ public:
     ~BiMap(); // Explicit destructor to handle unique_ptr correctly
 
     BiMap(const BiMap& other); // Copy constructor
-    BiMap(BiMap&& other) noexcept; // Move constructor
     BiMap& operator=(const BiMap& other); // Copy assignment
-    BiMap& operator=(BiMap&& other) noexcept; // Move assignment
 
     bool Add(std::string_view key, std::string_view value);
 
