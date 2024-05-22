@@ -130,12 +130,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bimap.cpp" />
     <ClCompile Include="input_reader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stat_reader.cpp" />
     <ClCompile Include="transport_catalogue.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bimap.h" />
     <ClInclude Include="geo.h" />
     <ClInclude Include="input_reader.h" />
     <ClInclude Include="log_duration.h" />
