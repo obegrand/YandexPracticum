@@ -138,10 +138,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bimap.h" />
+    <ClInclude Include="canvas.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="cow.h" />
+    <ClInclude Include="drawer.h" />
     <ClInclude Include="geo.h" />
+    <ClInclude Include="geom.h" />
+    <ClInclude Include="image.h" />
     <ClInclude Include="input_reader.h" />
     <ClInclude Include="log_duration.h" />
+    <ClInclude Include="shapes.h" />
     <ClInclude Include="stat_reader.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="tile.h" />
     <ClInclude Include="transport_catalogue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
