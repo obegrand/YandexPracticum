@@ -100,7 +100,7 @@ void Text::RenderObject(const RenderContext& context) const {
 // ---------- Document ------------------
 
 void Document::AddPtr(std::unique_ptr<Object>&& obj) {
-    objects_.emplace_back(std::move(obj)); // Конвертируем unique_ptr в Object*
+    objects_.emplace_back(std::move(obj));
 }
 
 void Document::Render(std::ostream& out) const {
