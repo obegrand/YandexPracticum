@@ -48,7 +48,6 @@ void Circle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
     out << "r=\""sv << radius_ << "\" "sv;
-    // Выводим атрибуты, унаследованные от PathProps
     RenderAttrs(context.out);
     out << "/>"sv;
 }
