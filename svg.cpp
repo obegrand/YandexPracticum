@@ -4,6 +4,8 @@ namespace svg {
 
 using namespace std::literals;
 
+// ---------- Color ------------------
+
 std::ostream& operator<<(std::ostream& os, const StrokeLineCap& cap) {
     switch (cap) {
     case StrokeLineCap::BUTT:      os << "butt"; break;
@@ -22,6 +24,11 @@ std::ostream& operator<<(std::ostream& os, const StrokeLineJoin& join) {
     case StrokeLineJoin::ROUND:      os << "round"; break;
     }
     return os;
+}
+
+std::ostream& operator<<(std::ostream& out, Color& color) {
+    std::visit(ColorPrinter{ out }, color);
+    return out;
 }
 
 void Object::Render(const RenderContext& context) const {

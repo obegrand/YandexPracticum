@@ -6,11 +6,9 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <variant>
 
 namespace svg {
-
-using Color = std::string;
-inline const Color NoneColor{ "none" };
 
 enum class StrokeLineCap {
     BUTT,
@@ -28,6 +26,59 @@ enum class StrokeLineJoin {
 
 std::ostream& operator<<(std::ostream& os, const StrokeLineCap& cap);
 std::ostream& operator<<(std::ostream& os, const StrokeLineJoin& join);
+
+struct Rgb {
+    Rgb()
+        : red(0)
+        , green(0)
+        , blue(0) 
+    { }
+
+    Rgb(uint8_t red, uint8_t green, uint8_t blue)
+        : red(red)
+        , green(green)
+        , blue(blue) 
+    { }
+
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
+
+struct Rgba : public Rgb {
+    Rgba()
+        : Rgb()
+        , opacity(1.0) {
+    }
+
+    Rgba(uint8_t red, uint8_t green, uint8_t blue, double opacity)
+        : Rgb(red, green, blue)
+        , opacity(opacity) {
+    }
+
+    double opacity;
+};
+
+using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
+inline const Color NoneColor{ std::monostate() };
+
+std::ostream& operator<<(std::ostream& out, Color& color);
+
+struct ColorPrinter {
+    std::ostream& out;
+    void operator()(std::monostate) const { out << "none"; }
+    void operator()(std::string color) const { out << color; }
+    void operator()(Rgb color) const {
+        out << "rgb("
+            << static_cast<int>(color.red) << "," << static_cast<int>(color.green) << "," << static_cast<int>(color.blue)
+            << ")";
+    }
+    void operator()(Rgba color) const {
+        out << "rgba("
+            << static_cast<int>(color.red) << "," << static_cast<int>(color.green) << "," << static_cast<int>(color.blue) << "," << color.opacity
+            << ")";
+    }
+};
 
 struct Point {
     Point() = default;
@@ -126,10 +177,14 @@ protected:
         using namespace std::literals;
 
         if (fill_color_) {
-            out << " fill=\""sv << *fill_color_ << "\""sv;
+            out << " fill=\""sv;
+            std::visit(ColorPrinter{ out }, *fill_color_);
+            out << "\""sv;
         }
         if (stroke_color_) {
-            out << " stroke=\""sv << *stroke_color_ << "\""sv;
+            out << " stroke=\""sv;
+            std::visit(ColorPrinter{ out }, *stroke_color_);
+            out << "\""sv;
         }
         if (width_) {
             out << " stroke-width=\""sv << *width_ << "\""sv;
