@@ -6,19 +6,16 @@
 #include <vector>
 #include <variant>
 
-using namespace std::string_view_literals;
-
 namespace json {
 
-    class Node;
-    using Dict = std::map<std::string, Node>;
-    using Array = std::vector<Node>;
+class Node;
+using Dict = std::map<std::string, Node>;
+using Array = std::vector<Node>;
 
-    class ParsingError : public std::runtime_error {
-    public:
-        using runtime_error::runtime_error;
-    };
-
+class ParsingError : public std::runtime_error {
+public:
+    using runtime_error::runtime_error;
+};
 
 class Node {
 public:
@@ -73,7 +70,6 @@ private:
 
 Document Load(std::istream& input);
 
-// Контекст вывода, хранит ссылку на поток вывода и текущий отсуп
 struct PrintContext {
     std::ostream& out;
     int indent_step = 4;
@@ -84,7 +80,7 @@ struct PrintContext {
             out.put(' ');
         }
     }
-    // Возвращает новый контекст вывода с увеличенным смещением
+
     PrintContext Indented() const {
         return { out, indent_step, indent_step + indent };
     }
@@ -101,6 +97,6 @@ struct ValuePrinter {
     void operator()(Dict dict);
 };
 
-void Print(const Document& doc, std::ostream& out);
+void Print(const Document& doc, std::ostream& output);
 
 }  // namespace json

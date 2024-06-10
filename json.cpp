@@ -8,21 +8,20 @@ namespace {
 
 using Number = std::variant<int, double>;
 
-// ------------- Load ------------------
-
-Node LoadNode(istream& input);
+json::Node LoadNode(istream& input);
 
 Node LoadNull(istream& input) {
     const string nameNull = "null";
     for (size_t i = 0; i < nameNull.size(); i++) {
         if (nameNull.at(i) == input.get()) continue;
-        else throw ParsingError("Null parsing error");
+        else throw json::ParsingError("Null parsing error");
     }
-    return {};
+    if ((input.peek() >= 'A' && input.peek() <= 'Z') || (input.peek() >= 'a' && input.peek() <= 'z')) {
+        throw ParsingError("Null parsing error");
+    }
+    return { nullptr };
 }
 
-// Ñ÷èòûâàåò ñîäåðæèìîå ñòðîêîâîãî ëèòåðàëà JSON-äîêóìåíòà
-// Ôóíêöèþ ñëåäóåò èñïîëüçîâàòü ïîñëå ñ÷èòûâàíèÿ îòêðûâàþùåãî ñèìâîëà ":
 std::string LoadString(std::istream& input) {
     using namespace std::literals;
 
@@ -31,24 +30,24 @@ std::string LoadString(std::istream& input) {
     std::string s;
     while (true) {
         if (it == end) {
-            // Ïîòîê çàêîí÷èëñÿ äî òîãî, êàê âñòðåòèëè çàêðûâàþùóþ êàâû÷êó?
+            // ÐŸÐ¾Ñ‚Ð¾Ðº Ð·Ð°ÐºÐ¾Ð½Ñ‡Ð¸Ð»ÑÑ Ð´Ð¾ Ñ‚Ð¾Ð³Ð¾, ÐºÐ°Ðº Ð²ÑÑ‚Ñ€ÐµÑ‚Ð¸Ð»Ð¸ Ð·Ð°ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‰ÑƒÑŽ ÐºÐ°Ð²Ñ‹Ñ‡ÐºÑƒ?
             throw ParsingError("String parsing error");
         }
         const char ch = *it;
         if (ch == '"') {
-            // Âñòðåòèëè çàêðûâàþùóþ êàâû÷êó
+            // Ð’ÑÑ‚Ñ€ÐµÑ‚Ð¸Ð»Ð¸ Ð·Ð°ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‰ÑƒÑŽ ÐºÐ°Ð²Ñ‹Ñ‡ÐºÑƒ
             ++it;
             break;
         }
         else if (ch == '\\') {
-            // Âñòðåòèëè íà÷àëî escape-ïîñëåäîâàòåëüíîñòè
+            // Ð’ÑÑ‚Ñ€ÐµÑ‚Ð¸Ð»Ð¸ Ð½Ð°Ñ‡Ð°Ð»Ð¾ escape-Ð¿Ð¾ÑÐ»ÐµÐ´Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚Ð¸
             ++it;
             if (it == end) {
-                // Ïîòîê çàâåðøèëñÿ ñðàçó ïîñëå ñèìâîëà îáðàòíîé êîñîé ÷åðòû
+                // ÐŸÐ¾Ñ‚Ð¾Ðº Ð·Ð°Ð²ÐµÑ€ÑˆÐ¸Ð»ÑÑ ÑÑ€Ð°Ð·Ñƒ Ð¿Ð¾ÑÐ»Ðµ ÑÐ¸Ð¼Ð²Ð¾Ð»Ð° Ð¾Ð±Ñ€Ð°Ñ‚Ð½Ð¾Ð¹ ÐºÐ¾ÑÐ¾Ð¹ Ñ‡ÐµÑ€Ñ‚Ñ‹
                 throw ParsingError("String parsing error");
             }
             const char escaped_char = *(it);
-            // Îáðàáàòûâàåì îäíó èç ïîñëåäîâàòåëüíîñòåé: \\, \n, \t, \r, \"
+            // ÐžÐ±Ñ€Ð°Ð±Ð°Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ð¾Ð´Ð½Ñƒ Ð¸Ð· Ð¿Ð¾ÑÐ»ÐµÐ´Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚ÐµÐ¹: \\, \n, \t, \r, \"
             switch (escaped_char) {
             case 'n':
                 s.push_back('\n');
@@ -66,16 +65,16 @@ std::string LoadString(std::istream& input) {
                 s.push_back('\\');
                 break;
             default:
-                // Âñòðåòèëè íåèçâåñòíóþ escape-ïîñëåäîâàòåëüíîñòü
+                // Ð’ÑÑ‚Ñ€ÐµÑ‚Ð¸Ð»Ð¸ Ð½ÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½ÑƒÑŽ escape-Ð¿Ð¾ÑÐ»ÐµÐ´Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚ÑŒ
                 throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
             }
         }
         else if (ch == '\n' || ch == '\r') {
-            // Ñòðîêîâûé ëèòåðàë âíóòðè- JSON íå ìîæåò ïðåðûâàòüñÿ ñèìâîëàìè \r èëè \n
+            // Ð¡Ñ‚Ñ€Ð¾ÐºÐ¾Ð²Ñ‹Ð¹ Ð»Ð¸Ñ‚ÐµÑ€Ð°Ð» Ð²Ð½ÑƒÑ‚Ñ€Ð¸- JSON Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°Ñ‚ÑŒÑÑ ÑÐ¸Ð¼Ð²Ð¾Ð»Ð°Ð¼Ð¸ \r Ð¸Ð»Ð¸ \n
             throw ParsingError("Unexpected end of line"s);
         }
         else {
-            // Ïðîñòî ñ÷èòûâàåì î÷åðåäíîé ñèìâîë è ïîìåùàåì åãî â ðåçóëüòèðóþùóþ ñòðîêó
+            // ÐŸÑ€Ð¾ÑÑ‚Ð¾ ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ð¾Ñ‡ÐµÑ€ÐµÐ´Ð½Ð¾Ð¹ ÑÐ¸Ð¼Ð²Ð¾Ð» Ð¸ Ð¿Ð¾Ð¼ÐµÑ‰Ð°ÐµÐ¼ ÐµÐ³Ð¾ Ð² Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð¸Ñ€ÑƒÑŽÑ‰ÑƒÑŽ ÑÑ‚Ñ€Ð¾ÐºÑƒ
             s.push_back(ch);
         }
         ++it;
@@ -84,12 +83,12 @@ std::string LoadString(std::istream& input) {
     return s;
 }
 
-Node LoadNumber(std::istream& input) {
+json::Node LoadNumber(std::istream& input) {
     using namespace std::literals;
 
     std::string parsed_num;
 
-    // Ñ÷èòûâàåò â parsed_num î÷åðåäíîé ñèìâîë èç input
+    // Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð² parsed_num Ð¾Ñ‡ÐµÑ€ÐµÐ´Ð½Ð¾Ð¹ ÑÐ¸Ð¼Ð²Ð¾Ð» Ð¸Ð· input
     auto read_char = [&parsed_num, &input] {
         parsed_num += static_cast<char>(input.get());
         if (!input) {
@@ -97,7 +96,7 @@ Node LoadNumber(std::istream& input) {
         }
         };
 
-    // Ñ÷èòûâàåò îäíó èëè áîëåå öèôð â parsed_num èç input
+    // Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð¾Ð´Ð½Ñƒ Ð¸Ð»Ð¸ Ð±Ð¾Ð»ÐµÐµ Ñ†Ð¸Ñ„Ñ€ Ð² parsed_num Ð¸Ð· input
     auto read_digits = [&input, read_char] {
         if (!std::isdigit(input.peek())) {
             throw ParsingError("A digit is expected"s);
@@ -110,24 +109,24 @@ Node LoadNumber(std::istream& input) {
     if (input.peek() == '-') {
         read_char();
     }
-    // Ïàðñèì öåëóþ ÷àñòü ÷èñëà
+    // ÐŸÐ°Ñ€ÑÐ¸Ð¼ Ñ†ÐµÐ»ÑƒÑŽ Ñ‡Ð°ÑÑ‚ÑŒ Ñ‡Ð¸ÑÐ»Ð°
     if (input.peek() == '0') {
         read_char();
-        // Ïîñëå 0 â JSON íå ìîãóò èäòè äðóãèå öèôðû
+        // ÐŸÐ¾ÑÐ»Ðµ 0 Ð² JSON Ð½Ðµ Ð¼Ð¾Ð³ÑƒÑ‚ Ð¸Ð´Ñ‚Ð¸ Ð´Ñ€ÑƒÐ³Ð¸Ðµ Ñ†Ð¸Ñ„Ñ€Ñ‹
     }
     else {
         read_digits();
     }
 
     bool is_int = true;
-    // Ïàðñèì äðîáíóþ ÷àñòü ÷èñëà
+    // ÐŸÐ°Ñ€ÑÐ¸Ð¼ Ð´Ñ€Ð¾Ð±Ð½ÑƒÑŽ Ñ‡Ð°ÑÑ‚ÑŒ Ñ‡Ð¸ÑÐ»Ð°
     if (input.peek() == '.') {
         read_char();
         read_digits();
         is_int = false;
     }
 
-    // Ïàðñèì ýêñïîíåíöèàëüíóþ ÷àñòü ÷èñëà
+    // ÐŸÐ°Ñ€ÑÐ¸Ð¼ ÑÐºÑÐ¿Ð¾Ð½ÐµÐ½Ñ†Ð¸Ð°Ð»ÑŒÐ½ÑƒÑŽ Ñ‡Ð°ÑÑ‚ÑŒ Ñ‡Ð¸ÑÐ»Ð°
     if (int ch = input.peek(); ch == 'e' || ch == 'E') {
         read_char();
         if (ch = input.peek(); ch == '+' || ch == '-') {
@@ -139,13 +138,13 @@ Node LoadNumber(std::istream& input) {
 
     try {
         if (is_int) {
-            // Ñíà÷àëà ïðîáóåì ïðåîáðàçîâàòü ñòðîêó â int
+            // Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð¿Ñ€Ð¾Ð±ÑƒÐµÐ¼ Ð¿Ñ€ÐµÐ¾Ð±Ñ€Ð°Ð·Ð¾Ð²Ð°Ñ‚ÑŒ ÑÑ‚Ñ€Ð¾ÐºÑƒ Ð² int
             try {
                 return std::stoi(parsed_num);
             }
             catch (...) {
-                // Â ñëó÷àå íåóäà÷è, íàïðèìåð, ïðè ïåðåïîëíåíèè,
-                // êîä íèæå ïîïðîáóåò ïðåîáðàçîâàòü ñòðîêó â double
+                // Ð’ ÑÐ»ÑƒÑ‡Ð°Ðµ Ð½ÐµÑƒÐ´Ð°Ñ‡Ð¸, Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€, Ð¿Ñ€Ð¸ Ð¿ÐµÑ€ÐµÐ¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ð¸,
+                // ÐºÐ¾Ð´ Ð½Ð¸Ð¶Ðµ Ð¿Ð¾Ð¿Ñ€Ð¾Ð±ÑƒÐµÑ‚ Ð¿Ñ€ÐµÐ¾Ð±Ñ€Ð°Ð·Ð¾Ð²Ð°Ñ‚ÑŒ ÑÑ‚Ñ€Ð¾ÐºÑƒ Ð² double
             }
         }
         return std::stod(parsed_num);
@@ -155,7 +154,7 @@ Node LoadNumber(std::istream& input) {
     }
 }
 
-Node LoadBool(istream& input) {
+json::Node LoadBool(istream& input) {
     const string nameFalse = "false";
     const string nameTrue = "true";
     char c = input.get();
@@ -165,10 +164,13 @@ Node LoadBool(istream& input) {
         if (name->at(i) == input.get()) continue;
         else throw ParsingError("Bool parsing error");
     }
+    if ((input.peek() >= 'A' && input.peek() <= 'Z') || (input.peek() >= 'a' && input.peek() <= 'z')) {
+        throw ParsingError("Bool parsing error"); 
+    }
     return Node(value);
 }
 
-Node LoadArray(istream& input) {
+json::Node LoadArray(istream& input) {
     Array result;
     if (input.peek() == -1) throw ParsingError("Array parsing error");
 
@@ -182,7 +184,7 @@ Node LoadArray(istream& input) {
     return Node(std::move(result));
 }
 
-Node LoadDict(istream& input) {
+json::Node LoadDict(istream& input) {
     Dict result;
     if (input.peek() == -1) throw ParsingError("Array parsing error");
 
@@ -199,7 +201,7 @@ Node LoadDict(istream& input) {
     return Node(std::move(result));
 }
 
-Node LoadNode(istream& input) {
+json::Node LoadNode(istream& input) {
     char c;
     input >> c;
 
@@ -226,184 +228,169 @@ Node LoadNode(istream& input) {
     }
 }
 
-}  // namespace
+} // namespace
 
-// ------------- Node ------------------
+// ------- Node::Node -------- 
 
-Node::Node(std::nullptr_t)
-    : value_(nullptr) {
-}
+json::Node::Node(std::nullptr_t)
+    : value_(nullptr) { }
 
-Node::Node(std::string value)
-    : value_(std::move(value)) {
-}
+json::Node::Node(std::string value) 
+    : value_(std::move(value)) { }
 
-Node::Node(int value)
-    : value_(value) {
-}
+json::Node::Node(int value)
+    : value_(value) { }
 
-Node::Node(double value)
-    : value_(value) {
-}
+json::Node::Node(double value)
+    : value_(value) { }
 
-Node::Node(bool value)
-    : value_(value) {
-}
+json::Node::Node(bool value)
+    : value_(value) { }
 
-Node::Node(Array array)
-    : value_(std::move(array)) {
-}
+json::Node::Node(Array array)
+    : value_(std::move(array)) { }
 
-Node::Node(Dict map)
-    : value_(std::move(map)) {
-}
+json::Node::Node(Dict map)
+    : value_(std::move(map)) { }
 
-// ------------- Is ------------------
+// ------- Is -------- 
 
-bool Node::IsInt() const {
+bool json::Node::IsInt() const {
     return holds_alternative<int>(value_);
 }
 
-bool Node::IsDouble() const {
+bool json::Node::IsDouble() const{
     return holds_alternative<double>(value_) || holds_alternative<int>(value_);
 }
 
-bool Node::IsPureDouble() const {
+bool json::Node::IsPureDouble() const{
     return holds_alternative<double>(value_);
 }
 
-bool Node::IsBool() const {
+bool json::Node::IsBool() const{
     return holds_alternative<bool>(value_);
 }
 
-bool Node::IsString() const {
+bool json::Node::IsString() const {
     return holds_alternative<std::string>(value_);
 }
 
-bool Node::IsNull() const {
+bool json::Node::IsNull() const {
     return holds_alternative<std::nullptr_t>(value_);
 }
 
-bool Node::IsArray() const {
+bool json::Node::IsArray() const {
     return holds_alternative<Array>(value_);
 }
 
-bool Node::IsMap() const {
+bool json::Node::IsMap() const {
     return holds_alternative<Dict>(value_);
 }
 
-// ------------- As ------------------
+// ------- As -------- 
 
-int Node::AsInt() const {
+int json::Node::AsInt() const {
     if (!IsInt()) throw std::logic_error("wrong type");
     return std::get<int>(value_);
 }
 
-bool Node::AsBool() const {
+bool json::Node::AsBool() const {
     if (!IsBool()) throw std::logic_error("wrong type");
     return std::get<bool>(value_);
 }
 
-double Node::AsDouble() const {
+double json::Node::AsDouble() const {
     if (!IsDouble()) throw std::logic_error("wrong type");
     if (IsInt()) return static_cast<double>(std::get<int>(value_));
-    return std::get<double>(value_);
+            else return std::get<double>(value_);
 }
 
-const std::string& Node::AsString() const {
+const std::string& json::Node::AsString() const {
     if (!IsString()) throw std::logic_error("wrong type");
     return std::get<std::string>(value_);
 }
 
-const Array& Node::AsArray() const {
+const Array& json::Node::AsArray() const {
     if (!IsArray()) throw std::logic_error("wrong type");
     return std::get<Array>(value_);
 }
 
-const Dict& Node::AsMap() const {
+const Dict& json::Node::AsMap() const {
     if (!IsMap()) throw std::logic_error("wrong type");
     return std::get<Dict>(value_);
 }
 
-// ------------- Other ------------------
-
-const Node::Value& Node::GetValue() const {
-    return value_;
-}
-
-bool Node::operator==(const Node& rhs) const {
-    return value_ == rhs.value_;
-}
-
-bool Node::operator!=(const Node& rhs) const {
-    return !(value_ == rhs.value_);
-}
+// ------- Other --------
 
 void Print(const Document& doc, std::ostream& out) {
     std::visit(ValuePrinter{ out }, doc.GetRoot().GetValue());
 }
-// ------------- Document ------------------
 
-Document::Document(Node root)
-    : root_(std::move(root)) {
+const json::Node::Value& json::Node::GetValue() const {
+    return value_;
 }
 
-const Node& Document::GetRoot() const {
+bool json::Node::operator==(const Node& rhs) const{
+    return value_ == rhs.value_;
+}
+
+bool json::Node::operator!=(const Node& rhs) const{
+    return !(value_ == rhs.value_);
+}
+
+// ------- Document --------
+
+json::Document::Document(Node root) 
+    : root_(std::move(root)) { }
+
+const Node& json::Document::GetRoot() const {
     return root_;
 }
 
-bool Document::operator==(const Document& rhs) const {
-    return root_ == rhs.root_;
+bool json::Document::operator==(const Document& rhs) const {
+    return  root_ == rhs.root_;
 }
 
-bool Document::operator!=(const Document& rhs) const {
+bool json::Document::operator!=(const Document& rhs) const {
     return !(root_ == rhs.root_);
 }
 
-Document Load(istream& input) {
-    return Document{ LoadNode(input) };
+json::Document Load(istream& input) {
+    return json::Document{ json::LoadNode(input) };
 }
-// ------------- ValuePrinter ------------------
 
-void ValuePrinter::operator()(std::nullptr_t) {
+// ------- ValuePrinter --------
+
+void json::ValuePrinter::operator()(std::nullptr_t) {
     out << "null"sv;
 }
 
-void ValuePrinter::operator()(std::string value) {
+void json::ValuePrinter::operator()(std::string value) {
     out << "\""sv;
     for (const char& c : value) {
-        if (c == '\n') {
-            out << "\\n"sv;
-            continue;
-        }
-        if (c == '\r') {
-            out << "\\r"sv;
-            continue;
-        }
-        if (c == '\"') out << "\\"sv;
-        if (c == '\t') {
-            out << "\t"sv;
-            continue;
-        }
-        if (c == '\\') out << "\\"sv;
-        out << c;
+        if (c == '\n') out << "\\n"sv;
+        else if (c == '\r') out << "\\r"sv;
+        else if (c == '\"') out << "\\\""sv; // Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚Ðµ "\\\"" Ð´Ð»Ñ Ð²Ñ‹Ð²Ð¾Ð´Ð° "
+        else if (c == '\t') out << "\\t"sv; // Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚Ðµ "\\t" Ð´Ð»Ñ Ð²Ñ‹Ð²Ð¾Ð´Ð° Ñ‚Ð°Ð±ÑƒÐ»ÑÑ†Ð¸Ð¸
+        else if (c == '\\') out << "\\\\"sv; // Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚Ðµ "\\\\" Ð´Ð»Ñ Ð²Ñ‹Ð²Ð¾Ð´Ð° 
+        else out << c;
     }
     out << "\""sv;
 }
 
-void ValuePrinter::operator()(int value) {
+void json::ValuePrinter::operator()(int value) {
     out << value;
 }
 
-void ValuePrinter::operator()(double value) {
+void json::ValuePrinter::operator()(double value) {
     out << value;
 }
 
-void ValuePrinter::operator()(bool value) {
+void json::ValuePrinter::operator()(bool value) {
     out << std::boolalpha << value;
 }
 
-void ValuePrinter::operator()(Array array) {
+void json::ValuePrinter::operator()(Array array) {
     out << "["sv;
     bool first = true;
     for (const auto& elem : array) {
@@ -415,7 +402,7 @@ void ValuePrinter::operator()(Array array) {
     out << "]"sv;
 }
 
-void ValuePrinter::operator()(Dict dict) {
+void json::ValuePrinter::operator()(Dict dict) {
     out << "{ "sv;
     bool first = true;
     for (auto& [key, node] : dict) {
