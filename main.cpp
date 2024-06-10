@@ -1,11 +1,13 @@
-// Объявите этот макрос в самом начале файла, чтобы при подключении <cmath> были объявлены макросы M_PI и другие 
-#define _USE_MATH_DEFINES 
-#include <cmath>
-#include <vector>
-
+#define _USE_MATH_DEFINES
 #include "svg.h"
 
+#include <cmath>
+
+using namespace std::literals;
+using namespace svg;
+
 namespace {
+
     svg::Polyline CreateStar(svg::Point center, double outer_rad, double inner_rad, int num_rays) {
         using namespace svg;
         Polyline polyline;
@@ -20,6 +22,7 @@ namespace {
         }
         return polyline;
     }
+
 } // namespace
 
 namespace shapes {
@@ -29,7 +32,8 @@ namespace shapes {
         Triangle(svg::Point p1, svg::Point p2, svg::Point p3)
             : p1_(p1)
             , p2_(p2)
-            , p3_(p3) {
+            , p3_(p3)
+        {
         }
 
         // Реализует метод Draw интерфейса svg::Drawable
@@ -39,24 +43,6 @@ namespace shapes {
 
     private:
         svg::Point p1_, p2_, p3_;
-    };
-
-    class Snowman : public svg::Drawable {
-    public:
-        Snowman(svg::Point head_center, double head_radius)
-            : center_(head_center)
-            , radius_(head_radius)
-        { }
-
-        // Реализует метод Draw интерфейса svg::Drawable
-        void Draw(svg::ObjectContainer& container) const override {
-            container.Add(svg::Circle().SetCenter({ center_.x, center_.y + radius_ * 5 }).SetRadius(radius_ * 2));
-            container.Add(svg::Circle().SetCenter({ center_.x, center_.y + radius_ * 2 }).SetRadius(radius_ * 1.5));
-            container.Add(svg::Circle().SetCenter(center_).SetRadius(radius_));
-        }
-    private:
-        svg::Point center_;
-        double radius_;
     };
 
     class Star : public svg::Drawable {
@@ -71,14 +57,36 @@ namespace shapes {
 
         // Реализует метод Draw интерфейса svg::Drawable
         void Draw(svg::ObjectContainer& container) const override {
-            container.Add(CreateStar(center_, outer_rad_, inner_rad_, num_rays_));
+            container.Add(CreateStar(center_, outer_rad_, inner_rad_, num_rays_).SetFillColor("red").SetStrokeColor("black"));
         }
+
     private:
         svg::Point center_;
         double outer_rad_;
         double inner_rad_;
         int num_rays_;
     };
+
+    class Snowman : public svg::Drawable {
+    public:
+        Snowman(svg::Point center, double radius)
+            : center_(center)
+            , radius_(radius)
+        {
+        }
+
+        // Реализует метод Draw интерфейса svg::Drawable
+        void Draw(svg::ObjectContainer& container) const override {
+            container.Add(svg::Circle().SetCenter({ center_.x, center_.y + radius_ * 5 }).SetRadius(radius_ * 2).SetFillColor("rgb(240,240,240)").SetStrokeColor("black"));
+            container.Add(svg::Circle().SetCenter({ center_.x, center_.y + radius_ * 2 }).SetRadius(radius_ * 1.5).SetFillColor("rgb(240,240,240)").SetStrokeColor("black"));
+            container.Add(svg::Circle().SetCenter(center_).SetRadius(radius_).SetFillColor("rgb(240,240,240)").SetStrokeColor("black"));
+        }
+
+    private:
+        svg::Point center_;
+        double radius_;
+    };
+
 } // namespace shapes
 
 template <typename DrawableIterator>
@@ -100,18 +108,26 @@ int main() {
     using namespace std;
 
     vector<unique_ptr<svg::Drawable>> picture;
-
     picture.emplace_back(make_unique<Triangle>(Point{ 100, 20 }, Point{ 120, 50 }, Point{ 80, 40 }));
-    // 5-лучевая звезда с центром {50, 20}, длиной лучей 10 и внутренним радиусом 4
     picture.emplace_back(make_unique<Star>(Point{ 50.0, 20.0 }, 10.0, 4.0, 5));
-    // Снеговик с "головой" радиусом 10, имеющей центр в точке {30, 20}
     picture.emplace_back(make_unique<Snowman>(Point{ 30, 20 }, 10.0));
 
     svg::Document doc;
-    // Так как документ реализует интерфейс ObjectContainer,
-    // его можно передать в DrawPicture в качестве цели для рисования
     DrawPicture(picture, doc);
 
-    // Выводим полученный документ в stdout
+    const Text base_text =  //
+        Text()
+        .SetFontFamily("Verdana"s)
+        .SetFontSize(12)
+        .SetPosition({ 10, 100 })
+        .SetData("Happy New Year!"s);
+    doc.Add(Text{ base_text }
+        .SetStrokeColor("yellow"s)
+        .SetFillColor("yellow"s)
+        .SetStrokeLineJoin(StrokeLineJoin::ROUND)
+        .SetStrokeLineCap(StrokeLineCap::ROUND)
+        .SetStrokeWidth(3));
+    doc.Add(Text{ base_text }.SetFillColor("red"s));
+
     doc.Render(cout);
 }

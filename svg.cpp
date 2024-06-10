@@ -4,10 +4,29 @@ namespace svg {
 
 using namespace std::literals;
 
+std::ostream& operator<<(std::ostream& os, const StrokeLineCap& cap) {
+    switch (cap) {
+    case StrokeLineCap::BUTT:      os << "butt"; break;
+    case StrokeLineCap::ROUND:     os << "round"; break;
+    case StrokeLineCap::SQUARE:    os << "square"; break;
+    }
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const StrokeLineJoin& join) {
+    switch (join) {
+    case StrokeLineJoin::ARCS:       os << "arcs"; break;
+    case StrokeLineJoin::BEVEL:      os << "bevel"; break;
+    case StrokeLineJoin::MITER:      os << "miter"; break;
+    case StrokeLineJoin::MITER_CLIP: os << "miter-clip"; break;
+    case StrokeLineJoin::ROUND:      os << "round"; break;
+    }
+    return os;
+}
+
 void Object::Render(const RenderContext& context) const {
     context.RenderIndent();
 
-    // Делегируем вывод тега своим подклассам
     RenderObject(context);
 
     context.out << std::endl;
@@ -29,6 +48,8 @@ void Circle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
     out << "r=\""sv << radius_ << "\" "sv;
+    // Выводим атрибуты, унаследованные от PathProps
+    RenderAttrs(context.out);
     out << "/>"sv;
 }
 
@@ -52,7 +73,9 @@ void Polyline::RenderObject(const RenderContext& context) const {
             out << " "sv << point.x << "," << point.y;
         }
     }
-    out << "\" />"sv;
+    out << "\"";
+    RenderAttrs(context.out);
+    out << "/>"sv;
 }
 
 // ---------- Text ------------------
@@ -89,7 +112,9 @@ Text& Text::SetData(std::string data) {
 
 void Text::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
-    out << "<text x=\""sv << position_.x << "\" y=\""sv << position_.y << "\" "sv;
+    out << "<text";
+    RenderAttrs(context.out);
+    out << " x=\""sv << position_.x << "\" y=\""sv << position_.y << "\" "sv;
     out << "dx=\""sv << offset_.x << "\" dy=\""sv << offset_.y << "\" "sv;
     out << "font-size=\""sv << fontSize_ << "\""sv;
     if (!fontFamily_.empty()) out << " font-family=\""sv << fontFamily_ << "\" "sv;
