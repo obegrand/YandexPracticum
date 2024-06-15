@@ -54,7 +54,7 @@ namespace svg {
 	void Circle::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
 		out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
-		out << "r=\""sv << radius_ << "\" "sv;
+		out << "r=\""sv << radius_ << "\""sv;
 		RenderAttrs(context.out);
 		out << "/>"sv;
 	}
@@ -68,7 +68,7 @@ namespace svg {
 
 	void Polyline::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		out << "<polyline  points=\""sv;
+		out << "<polyline points=\""sv;
 		bool is_first = true;
 		for (auto& point : polylines_) {
 			if (is_first) {
@@ -123,8 +123,8 @@ namespace svg {
 		out << " x=\""sv << position_.x << "\" y=\""sv << position_.y << "\" "sv;
 		out << "dx=\""sv << offset_.x << "\" dy=\""sv << offset_.y << "\" "sv;
 		out << "font-size=\""sv << fontSize_ << "\""sv;
-		if (!fontFamily_.empty()) out << " font-family=\""sv << fontFamily_ << "\" "sv;
-		if (!fontWeight_.empty()) out << "font-weight=\""sv << fontWeight_ << "\""sv;
+		if (!fontFamily_.empty()) out << " font-family=\""sv << fontFamily_ << "\""sv;
+		if (!fontWeight_.empty()) out << " font-weight=\""sv << fontWeight_ << "\""sv;
 		out << ">"sv << data_ << "</text>"sv;
 	}
 

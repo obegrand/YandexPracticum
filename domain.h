@@ -28,6 +28,7 @@ namespace catalogue {
 	struct Bus {
 		std::string number;
 		std::vector<Stop*> stop_names;
+		bool is_roundtrip;
 	};
 
 	struct BusStat {

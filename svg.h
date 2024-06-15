@@ -130,14 +130,13 @@ namespace svg {
 	public:
 		template <typename T>
 		void Add(T obj) {
-			objects_.emplace_back(std::make_unique<T>(std::move(obj)));
+			AddPtr(std::make_unique<T>(std::move(obj)));
 		}
 
 		virtual void AddPtr(std::unique_ptr<Object>&& obj) = 0;
 
 	protected:
 		~ObjectContainer() = default;
-		std::vector<std::unique_ptr<Object>> objects_;
 	};
 
 	class Drawable {
@@ -262,6 +261,9 @@ namespace svg {
 		void AddPtr(std::unique_ptr<Object>&& obj) override;
 
 		void Render(std::ostream& out) const;
+
+	private:
+		std::vector<std::unique_ptr<Object>> objects_;
 	};
 
 }  // namespace svg

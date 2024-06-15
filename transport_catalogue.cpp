@@ -12,9 +12,8 @@ namespace catalogue {
 		buses_through_stop_[stops_storage_.back().name];
 	}
 
-	void TransportCatalogue::Add(std::string_view number, const std::vector<std::string_view>& stops) {
-		Bus newBus = { .number = std::string(number),.stop_names = {} };
-
+	void TransportCatalogue::Add(std::string_view number, const std::vector<std::string_view>& stops, bool is_roundtrip) {
+		Bus newBus = { .number = std::string(number),.stop_names = {},.is_roundtrip = is_roundtrip };
 		for (const auto& stop : stops) {
 			auto it = stops_.find(stop);
 			if (it != stops_.end()) {
@@ -28,6 +27,7 @@ namespace catalogue {
 		for (const auto& stop : stops) {
 			buses_through_stop_[stop].insert(buses_storage_.back().number);
 		}
+
 	}
 
 	const Bus& TransportCatalogue::GetBus(std::string_view number) const {
@@ -40,6 +40,22 @@ namespace catalogue {
 
 	std::set<std::string_view> TransportCatalogue::GetBusesByStop(const std::string_view name) const {
 		return buses_through_stop_.at(name);
+	}
+
+	const std::unordered_map<std::string_view, const Bus*> TransportCatalogue::GetAllBuses() const {
+		std::unordered_map<std::string_view, const Bus*> result;
+		for (const auto& bus : buses_) {
+			result.emplace(bus);
+		}
+		return result;
+	}
+
+	const std::map<std::string_view, const Bus*> TransportCatalogue::GetAllBusesSorted() const {
+		std::map<std::string_view, const Bus*> result;
+		for (const auto& bus : buses_) {
+			result.emplace(bus);
+		}
+		return result;
 	}
 
 	bool TransportCatalogue::ContainsBus(std::string_view number)const {
@@ -83,7 +99,7 @@ namespace catalogue {
 		}
 		std::cout << "Buses:" << std::endl;
 		for (auto& bus : buses_storage_) {
-			std::cout << "  " << bus.number << std::endl;
+			std::cout << "  " << bus.number << ": " << bus.is_roundtrip << std::endl;
 			for (auto& stop_name : bus.stop_names) {
 				std::cout << "    " << stop_name->name << std::endl;
 			}

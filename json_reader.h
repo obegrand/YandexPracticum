@@ -1,6 +1,7 @@
 #pragma once
 #include "json.h"
 #include "transport_catalogue.h"
+#include "map_renderer.h"
 
 /*
  * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
@@ -16,9 +17,11 @@ public:
 
 	const json::Node& GetBaseRequests() const;
 	const json::Node& GetStatRequests() const;
+	const json::Node& GetRenderSettings() const;
 
 	void AddStop(const json::Dict& stop);
 	void AddBus(const json::Dict& bus);
+	render::RenderSettings FillSettings(const json::Dict& settings_map) const;
 
 private:
 	catalogue::TransportCatalogue& catalogue_;
