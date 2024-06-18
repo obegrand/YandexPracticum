@@ -323,7 +323,7 @@ namespace json {
 	// ------- Other --------
 
 	void Print(const Document& doc, std::ostream& out) {
-		ValuePrinter printer{ {out} };
+		ValuePrinter printer{ {out,4,0} };
 		std::visit(printer, doc.GetRoot().GetValue());
 	}
 
@@ -367,7 +367,6 @@ namespace json {
 	}
 
 	void ValuePrinter::operator()(std::string value) {
-		ctx.PrintIndent();
 		ctx.out << "\"" << value << "\"";
 	}
 
@@ -389,6 +388,7 @@ namespace json {
 		for (const auto& elem : array) {
 			if (!first) ctx.out << "," << std::endl;
 			else first = false;
+			ctx.PrintIndent();
 			std::visit(ValuePrinter{ ctx.Indented() }, elem.GetValue());
 		}
 		ctx.out << std::endl;

@@ -1,4 +1,5 @@
 #include "request_handler.h"
+#include <sstream>
 
 /*
  * Здесь можно было бы разместить код обработчика запросов к базе, содержащего логику, которую не
@@ -24,6 +25,10 @@ void RequestHandler::ProcessRequests() const {
 		}
 		else if (type == "Bus") {
 			result.push_back(PrintBus(stat_request.AsMap()));
+		}
+		else if (type == "Map") {
+			render::MapRender map_render(requests_.FillSettings(requests_.GetRenderSettings().AsMap()));
+			result.push_back(PrintMap(stat_request.AsMap(),map_render));
 		}
 	}
 	json::Print(json::Document{ result }, std::cout);
@@ -60,6 +65,15 @@ const json::Node RequestHandler::PrintStop(const json::Dict& request_map) const 
 		}
 		result["buses"] = buses;
 	}
+	return json::Node{ result };
+}
+const json::Node RequestHandler::PrintMap(const json::Dict& request_map, render::MapRender& map_render) const {
+	json::Dict result;
+	result["request_id"] = request_map.at("id").AsInt();
+	std::stringstream ss;
+	map_render.GetMap(db_.GetAllBusesSorted()).Render(ss); // Рендерим Document в stringstream
+	result["map"] = json::Node{ ss.str() };
+
 	return json::Node{ result };
 }
 std::optional<catalogue::BusStat> RequestHandler::GetBusStat(const std::string_view& bus_number) const {

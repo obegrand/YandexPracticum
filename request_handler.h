@@ -42,8 +42,10 @@ public:
 	void ProcessRequests() const;
 
 	const json::Node PrintBus(const json::Dict& request_map) const;
-
+	
 	const json::Node PrintStop(const json::Dict& request_map) const;
+
+	const json::Node PrintMap(const json::Dict& request_map, render::MapRender& map_render) const;
 
 	std::optional<catalogue::BusStat> GetBusStat(const std::string_view& bus_number) const;
 

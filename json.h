@@ -70,18 +70,16 @@ namespace json {
 
 	Document Load(std::istream& input);
 
-	// Контекст вывода, хранит ссылку на поток вывода и текущий отсуп
 	struct PrintContext {
 		std::ostream& out;
 		int indent_step = 4;
 		int indent = 0;
 
-		void PrintIndent() const {
-			for (int i = 0; i < indent; ++i) {
+		void PrintIndent(int x = 0) const {
+			for (int i = 0; i < indent+x; ++i) {
 				out.put(' ');
 			}
 		}
-		// Возвращает новый контекст вывода с увеличенным смещением
 		PrintContext Indented() const {
 			return { out, indent_step, indent_step + indent };
 		}

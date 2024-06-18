@@ -176,23 +176,23 @@ namespace svg {
 			using namespace std::literals;
 
 			if (fill_color_) {
-				out << " fill=\""sv;
+				out << " fill=\\\""sv;
 				std::visit(ColorPrinter{ out }, *fill_color_);
-				out << "\""sv;
+				out << "\\\""sv;
 			}
 			if (stroke_color_) {
-				out << " stroke=\""sv;
+				out << " stroke=\\\""sv;
 				std::visit(ColorPrinter{ out }, *stroke_color_);
-				out << "\""sv;
+				out << "\\\""sv;
 			}
 			if (width_) {
-				out << " stroke-width=\""sv << *width_ << "\""sv;
+				out << " stroke-width=\\\""sv << *width_ << "\\\""sv;
 			}
 			if (line_cap_) {
-				out << " stroke-linecap=\""sv << *line_cap_ << "\""sv;
+				out << " stroke-linecap=\\\""sv << *line_cap_ << "\\\""sv;
 			}
 			if (line_join_) {
-				out << " stroke-linejoin=\""sv << *line_join_ << "\""sv;
+				out << " stroke-linejoin=\\\""sv << *line_join_ << "\\\""sv;
 			}
 		}
 
