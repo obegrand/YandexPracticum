@@ -389,7 +389,10 @@ namespace json {
 			if (!first) ctx.out << "," << std::endl;
 			else first = false;
 			ctx.PrintIndent();
+			ctx.PrintIndent(-4);
 			std::visit(ValuePrinter{ ctx.Indented() }, elem.GetValue());
+
+
 		}
 		ctx.out << std::endl;
 		ctx.PrintIndent();

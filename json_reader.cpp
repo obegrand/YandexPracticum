@@ -52,7 +52,7 @@ void JsonReader::AddBus(const json::Dict& data) {
 	for (auto& stop_name : data.at("stops").AsArray()) {
 		stop_names.push_back(stop_name.AsString());
 	}
-	if (!is_roundtrip && stop_names.front() == stop_names.back()) is_roundtrip = !is_roundtrip;
+	//if (!is_roundtrip && stop_names.front() == stop_names.back()) is_roundtrip = !is_roundtrip;
 	if (!is_roundtrip) {
 		for (int i = stop_names.size() - 2; i >= 0; --i) {
 			stop_names.push_back(stop_names[i]);

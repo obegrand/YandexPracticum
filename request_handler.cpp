@@ -70,9 +70,9 @@ const json::Node RequestHandler::PrintStop(const json::Dict& request_map) const 
 const json::Node RequestHandler::PrintMap(const json::Dict& request_map, render::MapRender& map_render) const {
 	json::Dict result;
 	result["request_id"] = request_map.at("id").AsInt();
-	std::stringstream ss;
-	map_render.GetMap(db_.GetAllBusesSorted()).Render(ss); // Рендерим Document в stringstream
-	result["map"] = json::Node{ ss.str() };
+	std::stringstream output;
+	map_render.GetMap(db_.GetAllBusesSorted()).Render(output);
+	result["map"] = json::Node{ output.str() };
 
 	return json::Node{ result };
 }
