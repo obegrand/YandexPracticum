@@ -1,145 +1,56 @@
-#include <iostream>
-#include <algorithm> // Убедитесь, что эта строка не закомментирована
-#include <numeric>
+#include <cassert>
+#include <functional>
+#include <optional>
 #include <string>
-#include <vector>
-#include <map>
-#include <unordered_map>
 
 using namespace std;
 
-template <typename Iterator>
-class IteratorRange {
+template <typename T>
+class LazyValue {
 public:
-	IteratorRange(Iterator begin, Iterator end)
-		: first(begin)
-		, last(end) {
-	}
+    explicit LazyValue(function<T()> init) : func_(init){
+        
+    }
 
-	Iterator begin() const {
-		return first;
-	}
+    inline bool HasValue() const {
+        return value_.has_value();
+    }
 
-	Iterator end() const {
-		return last;
-	}
+    const T& Get() const {
+        if (!HasValue()) value_ = func_();
+        return value_.value();
+    }
 
 private:
-	const Iterator first, last;
+    function<T()> func_;
+    mutable optional<T> value_;
 };
 
-template <typename Collection>
-auto Head(Collection& v, size_t top) {
-	return IteratorRange{ v.begin(), next(v.begin(), min(top, v.size())) };
+void UseExample() {
+    const string big_string = "Giant amounts of memory"s;
+
+    LazyValue<string> lazy_string([&big_string] {
+        return big_string;
+        });
+
+    assert(!lazy_string.HasValue());
+    assert(lazy_string.Get() == big_string);
+    assert(lazy_string.Get() == big_string);
 }
 
-struct Person {
-	string name;
-	int age, income;
-	bool is_male;
-};
+void TestInitializerIsntCalled() {
+    bool called = false;
 
-static vector<Person> ReadPeople(istream& input) {
-	int count;
-	input >> count;
-
-	vector<Person> result(count);
-	for (Person& p : result) {
-		char gender;
-		input >> p.name >> p.age >> p.income >> gender;
-		p.is_male = gender == 'M';
-	}
-
-	return result;
-}
-
-std::pair<std::string, std::string> most_popular_name(const std::vector<Person>& people) {
-	std::map<std::string_view, int> male_name_count;
-	std::map<std::string_view, int> female_name_count;
-
-	for (const Person& p : people) {
-		if (p.is_male) {
-			++male_name_count[p.name];
-		}
-		else {
-			++female_name_count[p.name];
-		}
-	}
-
-	std::string most_popular_male_name;
-	std::string most_popular_female_name;
-	int max_male_count = 0;
-	int max_female_count = 0;
-
-	for (const auto& [name, count] : male_name_count) {
-		if (count > max_male_count) {
-			max_male_count = count;
-			most_popular_male_name = name;
-		}
-	}
-
-	for (const auto& [name, count] : female_name_count) {
-		if (count > max_female_count) {
-			max_female_count = count;
-			most_popular_female_name = name;
-		}
-	}
-
-	return { most_popular_male_name, most_popular_female_name };
-}
-
-vector<uint64_t> PeopleByWealthy(std::vector<Person>& people) {
-	vector<uint64_t> result; 
-	result.reserve(people.size());
-	sort(people.begin(), people.end(),
-		[](const Person& lhs, const Person& rhs) {
-			return lhs.income > rhs.income;
-		});
-	uint64_t cur_sum = 0;
-	for (const Person& person : people) {
-		cur_sum += person.income;
-		result.push_back(cur_sum);
-	}
-	return result;
+    {
+        LazyValue<int> lazy_int([&called] {
+            called = true;
+            return 0;
+            });
+    }
+    assert(!called);
 }
 
 int main() {
-	vector<Person> people = ReadPeople(cin);
-	auto [most_popular_male_name, most_popular_female_name] = most_popular_name(people);
-	vector<uint64_t> people_by_wealthy = PeopleByWealthy(people);
-	int adult_age, count;
-	char gender;
-
-	sort(people.begin(), people.end(),
-		[](const Person& lhs, const Person& rhs) {
-			return lhs.age < rhs.age;
-		});
-
-	for (string command; cin >> command;)
-		if (command == "AGE"s) {
-			cin >> adult_age;
-
-			auto adult_begin = lower_bound(people.begin(), people.end(), adult_age,
-				[](const Person& lhs, int age) {
-					return lhs.age < age;
-				});
-
-			cout << "There are "s << distance(adult_begin, people.end()) << " adult people for maturity age "s
-				<< adult_age << '\n';
-		}
-		else if (command == "WEALTHY"s) {
-			cin >> count;
-
-			cout << "Top-"s << count << " people have total income "s << people_by_wealthy[count - 1] << '\n';
-		}
-		else if (command == "POPULAR_NAME"s) {
-			cin >> gender;
-
-			if (gender == 'M') {
-				cout << "Most popular name among people of gender "s << gender << " is "s << most_popular_male_name << '\n';
-			}
-			else {
-				cout << "Most popular name among people of gender "s << gender << " is "s << most_popular_female_name << '\n';
-			}
-		}
+    UseExample();
+    TestInitializerIsntCalled();
 }
