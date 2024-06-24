@@ -1,56 +1,118 @@
 #include <cassert>
-#include <functional>
-#include <optional>
-#include <string>
+#include <cstddef>  // нужно для nullptr_t
 
 using namespace std;
 
+// Реализуйте шаблон класса UniquePtr
 template <typename T>
-class LazyValue {
-public:
-    explicit LazyValue(function<T()> init) : func_(init){
-        
-    }
-
-    inline bool HasValue() const {
-        return value_.has_value();
-    }
-
-    const T& Get() const {
-        if (!HasValue()) value_ = func_();
-        return value_.value();
-    }
-
+class UniquePtr {
 private:
-    function<T()> func_;
-    mutable optional<T> value_;
+    T* ptr_ = nullptr;
+public:
+    UniquePtr() : ptr_(nullptr) {}
+    explicit UniquePtr(T* ptr) : ptr_(ptr) {}
+    UniquePtr(const UniquePtr& ptr) = delete;
+    UniquePtr(UniquePtr&& other) {
+        if (this != &other) {
+            ptr_ = other.ptr_;
+            other.ptr_ = nullptr;
+        }
+    }
+    UniquePtr& operator=(const UniquePtr&) = delete;
+    UniquePtr& operator=(nullptr_t) {
+        delete ptr_;
+        ptr_ = nullptr;
+        return *this;
+    }
+    UniquePtr& operator=(UniquePtr&& other) {
+        if (this == &other) return *this;
+        delete ptr_;
+        ptr_ = other.ptr_;
+        other.ptr_ = nullptr;
+        return *this;
+    }
+    ~UniquePtr() {
+        delete ptr_;
+        ptr_ = nullptr;
+    }
+
+    T& operator*() const {
+        return *ptr_;
+    }
+    T* operator->() const {
+        return ptr_;
+    }
+    T* Release() {
+        T* temp = ptr_;
+        ptr_ = nullptr;
+        return temp;
+    }
+    void Reset(T* ptr) {
+        delete ptr_;
+        ptr_ = ptr;
+    }
+    void Swap(UniquePtr& other) {
+        T* temp = other.ptr_;
+        other.ptr_ = ptr_;
+        ptr_ = temp;
+    }
+    T* Get() const {
+        return ptr_;
+    }
 };
 
-void UseExample() {
-    const string big_string = "Giant amounts of memory"s;
+struct Item {
+    static int counter;
+    int value;
+    Item(int v = 0)
+        : value(v)
+    {
+        ++counter;
+    }
+    Item(const Item& other)
+        : value(other.value)
+    {
+        ++counter;
+    }
+    ~Item() {
+        --counter;
+    }
+};
 
-    LazyValue<string> lazy_string([&big_string] {
-        return big_string;
-        });
+int Item::counter = 0;
 
-    assert(!lazy_string.HasValue());
-    assert(lazy_string.Get() == big_string);
-    assert(lazy_string.Get() == big_string);
-}
+void TestLifetime() {
+    Item::counter = 0;
+    {
+        UniquePtr<Item> ptr(new Item);
+        assert(Item::counter == 1);
 
-void TestInitializerIsntCalled() {
-    bool called = false;
+        ptr.Reset(new Item);
+        assert(Item::counter == 1);
+    }
+    assert(Item::counter == 0);
 
     {
-        LazyValue<int> lazy_int([&called] {
-            called = true;
-            return 0;
-            });
+        UniquePtr<Item> ptr(new Item);
+        assert(Item::counter == 1);
+
+        auto rawPtr = ptr.Release();
+        assert(Item::counter == 1);
+
+        delete rawPtr;
+        assert(Item::counter == 0);
     }
-    assert(!called);
+    assert(Item::counter == 0);
+}
+
+void TestGetters() {
+    UniquePtr<Item> ptr(new Item(42));
+    assert(ptr.Get()->value == 42);
+    assert((*ptr).value == 42);
+    assert(ptr->value == 42);
 }
 
 int main() {
-    UseExample();
-    TestInitializerIsntCalled();
+    TestLifetime();
+    TestGetters();
 }
