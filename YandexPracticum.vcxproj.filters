@@ -23,5 +23,14 @@
     <ClInclude Include="log_duration.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="flight_provider.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="hotel_provider.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="trip_manager.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

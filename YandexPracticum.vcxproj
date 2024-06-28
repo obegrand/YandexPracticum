@@ -134,7 +134,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="flight_provider.h" />
+    <ClInclude Include="hotel_provider.h" />
     <ClInclude Include="log_duration.h" />
+    <ClInclude Include="trip_manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
