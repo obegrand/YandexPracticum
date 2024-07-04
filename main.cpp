@@ -1,67 +1,88 @@
-#include "trip_manager.h"
-
-#include <cassert>
+#include "json_builder.h"
 #include <iostream>
-#include <stdexcept>
 
 using namespace std;
 
-// –≠—Ç–∏ –æ–ø—Ä–µ–¥–µ–ª–µ–Ω–∏—è —Å—Ç–∞—Ç–∏—á–µ—Å–∫–∏—Ö –ø–µ—Ä–µ–º–µ–Ω–Ω—ã—Ö –ø—Ä–∞–≤–∏–ª—å–Ω–µ–µ –±—ã–ª–æ –±—ã –ø–æ–º–µ—Å—Ç–∏—Ç—å –≤ —Å–æ–æ—Ç–≤–µ—Ç—Å—Ç–≤—É—é—â–∏–π cpp-—Ñ–∞–π–ª,
-// –Ω–æ –º—ã –¥–ª—è –ø—Ä–æ—Å—Ç–æ—Ç—ã —Ä–∞–∑–º–µ—Å—Ç–∏–º –∏—Ö –∑–¥–µ—Å—å
-
-int FlightProvider::capacity = 0;
-int FlightProvider::counter = 0;
-
-int HotelProvider::capacity = 0;
-int HotelProvider::counter = 0;
-
-void TestNoOverbooking() {
-    FlightProvider::capacity = 100;
-    HotelProvider::capacity = 100;
-    FlightProvider::counter = 0;
-    HotelProvider::counter = 0;
-    {
-        TripManager tm;
-        auto trip = tm.Book({});
-    }
-    assert(FlightProvider::counter == 0);
-    assert(HotelProvider::counter == 0);
-}
-
-void TestFlightOverbooking() {
-    FlightProvider::capacity = 1;
-    HotelProvider::capacity = 100;
-    FlightProvider::counter = 0;
-    HotelProvider::counter = 0;
-    try {
-        TripManager tm;
-        auto trip = tm.Book({});
-    } catch (const runtime_error&) {
-        assert(FlightProvider::counter == 0);
-        assert(HotelProvider::counter == 0);
-        return;
-    }
-    cout << "Flight overbooking was expected"s << endl;
-}
-
-void TestHotelOverbooking() {
-    FlightProvider::capacity = 100;
-    HotelProvider::capacity = 0;
-    FlightProvider::counter = 0;
-    HotelProvider::counter = 0;
-    try {
-        TripManager tm;
-        auto trip = tm.Book({});
-    } catch (const runtime_error& ex) {
-        assert(FlightProvider::counter == 0);
-        assert(HotelProvider::counter == 0);
-        return;
-    }
-    cout << "Hotel overbooking was expected"s << endl;
-}
-
 int main() {
-    TestNoOverbooking();
-    TestFlightOverbooking();
-    TestHotelOverbooking();
+	try
+	{
+		json::Print(
+			json::Document{
+		json::Builder{}.Value("s"s).Value("1"s).Build()
+			},
+			cout
+		);
+	}
+	catch (const std::logic_error& err) {
+		cout << "logic_error - " << err.what() << endl;
+	}
+	catch (const std::exception& err) {
+		cout << "unexpect_error - " << err.what() << endl;
+
+	}
+	try
+	{
+		json::Print(
+			json::Document{
+		json::Builder{}.Value("s"s).StartDict().Build()
+			},
+			cout
+		);
+	}
+	catch (const std::logic_error& err) {
+		cout << "logic_error - " << err.what() << endl;
+	}
+	catch (const std::exception& err) {
+		cout << "unexpect_error - " << err.what() << endl;
+
+	}
+	try
+	{
+		json::Print(
+			json::Document{
+				json::Builder{}
+				.Value("just a string"s)
+				.Build()
+			},
+			cout
+		);
+	}
+	catch (const std::logic_error& err) {
+		cout << "logic_error - " << err.what() << endl;
+	}
+	catch (const std::exception& err) {
+		cout << "unexpect_error - " << err.what() << endl;
+
+	}
+	try
+	{
+		json::Print(
+			json::Document{
+				// ‘ÓÏ‡ÚËÓ‚‡ÌËÂ ÌÂ ËÏÂÂÚ ÙÓÏ‡Î¸ÌÓ„Ó ÁÌ‡˜ÂÌËˇ:
+				// ˝ÚÓ ÔÓÒÚÓ ˆÂÔÓ˜Í‡ ‚˚ÁÓ‚Ó‚ ÏÂÚÓ‰Ó‚
+		json::Builder{}
+		.StartDict()
+			.Key("key1"s).Value(123)
+			.Key("key2"s).Value("value2"s)
+			.Key("key3"s).StartArray()
+				.Value(456)
+				.StartDict().EndDict()
+				.StartDict()
+					.Key(""s).Value(nullptr)
+				.EndDict()
+				.Value(""s)
+			.EndArray()
+		.EndDict()
+		.Build()
+			},
+			cout
+		);
+	}
+	catch (const std::logic_error& err) {
+		cout << "logic_error - " << err.what() << endl;
+	}
+	catch (const std::exception& err) {
+		cout << "unexpect_error - " << err.what() << endl;
+
+	}   
 }
