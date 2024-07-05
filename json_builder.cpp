@@ -1,11 +1,14 @@
 #include "json_builder.h"
 
 namespace json {
+	
+	//---------- Builder ------------
+
 	Builder::Builder() {
 		node_stack_.push_back(&node_);
 	}
 
-	Builder& Builder::Key(std::string key) {
+	JsonDictKey Builder::Key(std::string key) {
 		Node* node_stack = node_stack_.back();
 		if ((!node_stack->IsDict() || !node_stack->IsArray()) && key_.has_value())
 			throw std::logic_error("reuse key or outside array or dict");
@@ -34,12 +37,12 @@ namespace json {
 		return *this;
 	}
 
-	Builder& Builder::StartDict() {
+	JsonDictItem Builder::StartDict() {
 		AddNode(std::move(Dict{}));
 		return *this;
 	}
 
-	Builder& Builder::StartArray() {
+	JsonArrayItem Builder::StartArray() {
 		AddNode(std::move(Array{}));
 		return *this;
 	}
@@ -62,6 +65,49 @@ namespace json {
 			key_.has_value()) 
 			throw std::logic_error("json document is not completed");
 		return node_;
+	}
+
+	//---------- JsonDictKey ------------
+
+	JsonDictItem JsonDictKey::Value(Node::Value value) {
+		return JsonDictItem(builder_.Value(value));
+	}
+
+	JsonDictItem JsonDictKey::StartDict() {
+		return builder_.StartDict();
+	}
+
+	JsonArrayItem JsonDictKey::StartArray() {
+		return builder_.StartArray();
+	}
+
+	//---------- JsonDictItem ------------
+
+	JsonDictKey JsonDictItem::Key(std::string key) {
+		return builder_.Key(key);
+	}
+
+	Builder& JsonDictItem::EndDict() {
+		return builder_.EndDict();
+	}
+
+	//---------- JsonArrayItem ------------
+
+
+	JsonArrayItem JsonArrayItem::Value(Node::Value value) {
+		return JsonArrayItem(builder_.Value(value));
+	}
+
+	JsonDictItem JsonArrayItem::StartDict() {
+		return builder_.StartDict();
+	}
+
+	JsonArrayItem JsonArrayItem::StartArray() {
+		return builder_.StartArray();
+	}
+
+	Builder& JsonArrayItem::EndArray() {
+		return builder_.EndArray();
 	}
 
 } // namespace json

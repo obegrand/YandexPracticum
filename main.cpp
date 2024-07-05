@@ -4,40 +4,16 @@
 using namespace std;
 
 int main() {
-	try
-	{
-		json::Print(
-			json::Document{
-		json::Builder{}.Value("s"s).Value("1"s).Build()
-			},
-			cout
-		);
-	}
-	catch (const std::logic_error& err) {
-		cout << "logic_error - " << err.what() << endl;
-	}
-	catch (const std::exception& err) {
-		cout << "unexpect_error - " << err.what() << endl;
+	//json::Builder{}.StartDict().Build();  // правило 3
+	//json::Builder{}.StartDict().Key("1"s).Value(1).Value(1);  // правило 2
+	//json::Builder{}.StartDict().Key("1"s).Key(""s);  // правило 1
+	//json::Builder{}.StartArray().Key("1"s);  // правило 4
+	//json::Builder{}.StartArray().EndDict();  // правило 4
+	//json::Builder{}.StartArray().Value(1).Value(2).EndDict();  // правило 5
 
-	}
-	try
-	{
-		json::Print(
-			json::Document{
-		json::Builder{}.Value("s"s).StartDict().Build()
-			},
-			cout
-		);
-	}
-	catch (const std::logic_error& err) {
-		cout << "logic_error - " << err.what() << endl;
-	}
-	catch (const std::exception& err) {
-		cout << "unexpect_error - " << err.what() << endl;
 
-	}
-	try
-	{
+
+	try {
 		json::Print(
 			json::Document{
 				json::Builder{}
@@ -47,42 +23,29 @@ int main() {
 			cout
 		);
 	}
-	catch (const std::logic_error& err) {
-		cout << "logic_error - " << err.what() << endl;
-	}
-	catch (const std::exception& err) {
-		cout << "unexpect_error - " << err.what() << endl;
-
-	}
-	try
-	{
+	catch (const std::logic_error& err) { cout << "1 logic_error - " << err.what() << endl; }
+	catch (const std::exception& err) { cout << "2 unexpect_error - " << err.what() << endl; }
+	try {
 		json::Print(
 			json::Document{
-				// Форматирование не имеет формального значения:
-				// это просто цепочка вызовов методов
-		json::Builder{}
-		.StartDict()
-			.Key("key1"s).Value(123)
-			.Key("key2"s).Value("value2"s)
-			.Key("key3"s).StartArray()
-				.Value(456)
-				.StartDict().EndDict()
+				json::Builder{}
 				.StartDict()
-					.Key(""s).Value(nullptr)
+					.Key("key1"s).Value(123)
+					.Key("key2"s).Value("value2"s)
+					.Key("key3"s).StartArray()
+						.Value(456)
+						.StartDict().EndDict()
+						.StartDict()
+							.Key(""s).Value(nullptr)
+						.EndDict()
+						.Value(""s)
+					.EndArray()
 				.EndDict()
-				.Value(""s)
-			.EndArray()
-		.EndDict()
-		.Build()
+				.Build()
 			},
 			cout
 		);
 	}
-	catch (const std::logic_error& err) {
-		cout << "logic_error - " << err.what() << endl;
-	}
-	catch (const std::exception& err) {
-		cout << "unexpect_error - " << err.what() << endl;
-
-	}   
+	catch (const std::logic_error& err) { cout << "2 logic_error - " << err.what() << endl; }
+	catch (const std::exception& err) { cout << "2 unexpect_error - " << err.what() << endl; }
 }

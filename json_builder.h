@@ -6,27 +6,65 @@
 
 namespace json {
 
+	class JsonDictKey;
+	class JsonDictItem;
+	class JsonArrayItem;
+
 	class Builder {
 	public:
 		Builder();
-		Builder& Key(std::string key);
+		JsonDictKey Key(std::string key);
 		Builder& Value(Node::Value value);
-		Builder& StartDict();
-		Builder& StartArray();
+		JsonDictItem StartDict();
+		JsonArrayItem StartArray();
 		Builder& EndDict();
 		Builder& EndArray();
 		Node& Build();
 	private:
 		template<typename Type>
-		inline void AddNode(Type type);
+		void AddNode(Type type);
 
 		Node node_{ nullptr };
 		std::vector<Node*> node_stack_;
 		std::optional<std::string> key_{ std::nullopt };
 	};
 
+	class JsonDictKey {
+	public:
+		JsonDictKey(Builder& builder) : builder_(builder) { }
+
+		JsonDictItem Value(Node::Value value);
+		JsonDictItem StartDict();
+		JsonArrayItem StartArray();
+	private:
+		Builder& builder_;
+	};
+
+	class JsonDictItem {
+	public:
+		JsonDictItem(Builder& builder) : builder_(builder) { }
+
+		JsonDictKey Key(std::string key);
+		Builder& EndDict();
+	private:
+		Builder& builder_;
+	};
+
+	class JsonArrayItem {
+	public:
+		JsonArrayItem(Builder& builder) : builder_(builder) { }
+		
+		JsonArrayItem Value(Node::Value value);
+		JsonDictItem StartDict();
+		JsonArrayItem StartArray();
+		Builder& EndArray();
+	private:
+		Builder& builder_;
+	};
+
+
 	template<typename Type>
-	inline void Builder::AddNode(Type type) {
+	void Builder::AddNode(Type type) {
 		Node* node_stack = node_stack_.back();
 		if (node_stack->IsDict()) {
 			if (!key_.has_value()) throw std::logic_error("key is empty");
