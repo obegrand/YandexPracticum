@@ -62,11 +62,10 @@ namespace json {
 		Builder& builder_;
 	};
 
-
 	template<typename Type>
 	void Builder::AddNode(Type type) {
 		Node* node_stack = node_stack_.back();
-		if (node_stack->IsDict()) {
+		if (node_stack->IsMap()) {
 			if (!key_.has_value()) throw std::logic_error("key is empty");
 			Dict& dict = std::get<Dict>(node_stack->GetValue());
 			dict[key_.value()].GetValue() = std::move(type);
