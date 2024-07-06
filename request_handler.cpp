@@ -1,5 +1,6 @@
 #include "request_handler.h"
 #include <sstream>
+#include "json_builder.h"
 
 /*
  * Здесь можно было бы разместить код обработчика запросов к базе, содержащего логику, которую не
@@ -17,8 +18,7 @@ RequestHandler::RequestHandler(JsonReader& requests, catalogue::TransportCatalog
 void RequestHandler::ProcessRequests() const {
 	if (requests_.GetStatRequests() == nullptr) return;
 	json::Array result;
-	const json::Array& stat_requests_arr = requests_.GetStatRequests().AsArray();
-	for (const auto& stat_request : stat_requests_arr) {
+	for (const auto& stat_request : requests_.GetStatRequests().AsArray()) {
 		std::string type = stat_request.AsMap().at("type").AsString();
 		if (type == "Stop") {
 			result.push_back(PrintStop(stat_request.AsMap()));
@@ -35,47 +35,71 @@ void RequestHandler::ProcessRequests() const {
 }
 
 const json::Node RequestHandler::PrintBus(const json::Dict& request_map) const {
-	json::Dict result;
+	json::Node result;
 	const std::string& bus_name = request_map.at("name").AsString();
-	result["request_id"] = request_map.at("id").AsInt();
+	const int id = request_map.at("id").AsInt();
 	if (!db_.ContainsBus(bus_name)) {
-		result["error_message"] = json::Node{ static_cast<std::string>("not found") };
+		result = json::Builder{}
+				.StartDict()
+					.Key("request_id").Value(id)
+					.Key("error_message").Value("not found")
+				.EndDict()
+			.Build();
 	}
 	else {
 		catalogue::BusStat bus_stat = GetBusStat(bus_name).value();
-		result["curvature"] = bus_stat.curvature;
-		result["route_length"] = bus_stat.route_length;
-		result["stop_count"] = bus_stat.stops_count;
-		result["unique_stop_count"] = bus_stat.unique_stops_count;
+		result = json::Builder{}
+				.StartDict()
+					.Key("curvature").Value(bus_stat.curvature)
+					.Key("route_length").Value(bus_stat.route_length)
+					.Key("stop_count").Value(bus_stat.stops_count)
+					.Key("unique_stop_count").Value(bus_stat.unique_stops_count)
+					.Key("request_id").Value(id)
+				.EndDict()
+			.Build();
 	}
-	return json::Node{ result };
+	return result;
 }
 
 const json::Node RequestHandler::PrintStop(const json::Dict& request_map) const {
-	json::Dict result;
+	json::Node result;
 	const std::string& stop_name = request_map.at("name").AsString();
-	result["request_id"] = request_map.at("id").AsInt();
+	const int id = request_map.at("id").AsInt();
 	if (!db_.ContainsStop(stop_name)) {
-		result["error_message"] = json::Node{ static_cast<std::string>("not found") };
+		result = json::Builder{}
+				.StartDict()
+					.Key("error_message").Value("not found")
+					.Key("request_id").Value(id)
+				.EndDict()
+			.Build();
 	}
 	else {
 		json::Array buses;
-		for (auto& bus : GetBusesByStop(stop_name)) {
+		for (auto& bus : db_.GetBusesByStop(stop_name)) {
 			buses.push_back(std::string(bus));
 		}
-		result["buses"] = buses;
+		result = json::Builder{}
+				.StartDict()
+					.Key("buses").Value(buses)
+					.Key("request_id").Value(id)
+				.EndDict()
+			.Build();
 	}
-	return json::Node{ result };
+	return result;
 }
 
 json::Node RequestHandler::PrintMap(const json::Dict& request_map, render::MapRender& map_render) const {
-	json::Dict result;
-	result["request_id"] = request_map.at("id").AsInt();
+	json::Node result;
+	const int id = request_map.at("id").AsInt();
 	std::stringstream output;
 	map_render.CreateMap(db_.GetAllBusesSorted()).Render(output);
-	result["map"] = json::Node{ output.str() };
-
-	return json::Node{ result };
+	result = json::Builder{}
+			.StartDict()
+				.Key("map").Value(output.str())
+				.Key("request_id").Value(id)
+			.EndDict()
+		.Build();
+	return result;
 }
 
 std::optional<catalogue::BusStat> RequestHandler::GetBusStat(const std::string_view bus_number) const {
@@ -91,8 +115,4 @@ std::optional<catalogue::BusStat> RequestHandler::GetBusStat(const std::string_v
 	bus_stat.route_length = distance;
 	bus_stat.curvature = distance / db_.ComputeGeoDistance(bus.stop_names);
 	return bus_stat;
-}
-
-const std::set<std::string_view> RequestHandler::GetBusesByStop(std::string_view stop_name) const {
-	return db_.GetBusesByStop(stop_name);
 }
