@@ -9,11 +9,11 @@
 class Ebook_sim {
 public:
 	void Read(size_t user_id, uint16_t page_count) {
-		if (users_read_progression_.contains(user_id)) {
-			page_count_by_user[users_read_progression_[user_id]]--; // update page_count_by_user
-		}
-		page_count_by_user[page_count]++;
-		users_read_progression_[user_id] = page_count;
+		if (users_read_progression_.contains(user_id))
+			page_count_by_user_[users_read_progression_[user_id]]--; // delete outdated data
+
+		page_count_by_user_[page_count]++;
+		users_read_progression_[std::move(user_id)] = std::move(page_count);
 	}
 
 	float Cheer(size_t user_id) {
@@ -22,8 +22,8 @@ public:
 		if (!users_read_progression_.contains(user_id)) return 0; // user not found
 		if (total_users == 1) return 1; // hi single user
 
-		size_t less_than_user = std::accumulate(page_count_by_user.begin(),
-			page_count_by_user.lower_bound(users_read_progression_.at(user_id)), 0,
+		size_t less_than_user = std::accumulate(page_count_by_user_.begin(),
+			page_count_by_user_.lower_bound(users_read_progression_[std::move(user_id)]), 0,
 			[](size_t sum, const std::pair<uint16_t, size_t>& p) {
 				return sum + p.second;
 			});
@@ -32,8 +32,8 @@ public:
 	}
 
 private:
-	std::unordered_map<size_t, uint16_t> users_read_progression_;
-	std::map<uint16_t, size_t> page_count_by_user;
+	std::unordered_map<size_t, uint16_t> users_read_progression_; // <user_id, read_progress>
+	std::map<uint16_t, size_t> page_count_by_user_; // <read_progress, how many users on this stage>
 };
 
 
