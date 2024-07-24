@@ -1,61 +1,94 @@
+#include <algorithm>
 #include <iostream>
-#include <list>
-#include <set>
+#include <string>
+#include <sstream>
 #include <string_view>
 #include <vector>
+#include <set>
+#include <algorithm>
 
-using namespace std;
+class Domain {
+public:
+	// конструктор должен позволять конструирование из string, с сигнатурой определитесь сами
+	Domain(const std::string& domain_name) : main_domain_(domain_name) {}
 
-template <typename InputIt1, typename InputIt2>
-void Merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, std::ostream& out) {
-    while (first1 != last1 && first2 != last2) {
-        if (std::less<>()(*first1, *first2)) {
-            out << *first1++ << std::endl;
-        }
-        else {
-            out << *first2++ << std::endl;
-        }
-    }
-    while (first1 != last1) {
-        out << *first1++ << std::endl;
-    }
-    while (first2 != last2) {
-        out << *first2++ << std::endl;
-    }
+	// разработайте operator==
+	bool operator==(const Domain& other) const {
+		return main_domain_ == other.main_domain_;
+	}
+
+	bool operator<(const Domain& other) const {
+		return main_domain_ < other.main_domain_;
+	}
+
+	// разработайте метод IsSubdomain, принимающий другой домен и возвращающий true, если this его поддомен
+	bool IsSubdomain(const Domain& potential_subdomain) const {
+		if (main_domain_ == potential_subdomain.main_domain_) return true;
+		else if (potential_subdomain.main_domain_.size() <= main_domain_.size() + 1) return false;
+		size_t dot_pos = potential_subdomain.main_domain_.size() - main_domain_.size() - 1;
+
+		if (potential_subdomain.main_domain_[dot_pos] == '.') {
+			return potential_subdomain.main_domain_.substr(dot_pos + 1) == main_domain_;
+		} 
+		else return false;
+	}
+
+	std::string GetDomain() const {
+		return main_domain_;
+	}
+
+private:
+	std::string main_domain_;
+};
+
+
+class DomainChecker {
+public:
+	// конструктор должен принимать список запрещённых доменов через пару итераторов
+	template <typename Iterator>
+	DomainChecker(Iterator first, Iterator last) : forbidden_domains_(first, last) {}
+
+	// разработайте метод IsForbidden, возвращающий true, если домен запрещён
+	bool IsForbidden(const Domain& domain) const {
+		for (const Domain& dom : forbidden_domains_) {
+			if (dom.IsSubdomain(domain)) return true;
+		}
+		return false;
+	}
+private:
+	std::vector<Domain> forbidden_domains_;
+};
+
+// разработайте функцию ReadDomains, читающую заданное количество доменов из стандартного входа
+const std::vector<Domain> ReadDomains(std::istream& input, size_t number) {
+	std::vector<Domain> result;
+	result.reserve(number);
+	std::string line;
+	for (size_t i = 0; i < number; ++i) {
+		getline(input, line);
+		result.push_back(line);
+	}
+	return result;
 }
 
-template <typename Container1, typename Container2>
-void MergeSomething(const Container1& src1, const Container2& src2, std::ostream& out) {
-    Merge(std::cbegin(src1), std::cend(src1), std::cbegin(src2), std::cend(src2), out);
-}
+template <typename Number>
+Number ReadNumberOnLine(std::istream& input) {
+	std::string line;
+	getline(input, line);
 
-template <typename T>
-void MergeHalves(const std::vector<T>& src, std::ostream& out) {
-    size_t mid = (src.size() + 1) / 2;
-    Merge(src.cbegin(), src.cbegin() + mid, src.cbegin() + mid, src.cend(), out);
+	Number num;
+	std::istringstream(line) >> num;
+
+	return num;
 }
 
 int main() {
-    vector<int> v1{ 60, 70, 80, 90 };
-    vector<int> v2{ 65, 75, 85, 95 };
-    vector<int> combined{ 60, 70, 80, 90, 65, 75, 85, 95 };
-    list<double> my_list{ 0.1, 72.5, 82.11, 1e+30 };
-    string_view my_string = "ACNZ"sv;
-    set<unsigned> my_set{ 20u, 77u, 81u };
+	using namespace std::string_view_literals;
+	const std::vector<Domain> forbidden_domains = ReadDomains(std::cin, ReadNumberOnLine<size_t>(std::cin));
+	DomainChecker checker(forbidden_domains.begin(), forbidden_domains.end());
 
-    // пока функция MergeSomething реализована пока только для векторов
-    cout << "Merging vectors:"sv << endl;
-    MergeSomething(v1, v2, cout);
-
-    cout << "Merging vector and list:"sv << endl;
-    MergeSomething(v1, my_list, cout);
-
-    cout << "Merging string and list:"sv << endl;
-    MergeSomething(my_string, my_list, cout);
-
-    cout << "Merging set and vector:"sv << endl;
-    MergeSomething(my_set, v2, cout);
-
-    cout << "Merging vector halves:"sv << endl;
-    MergeHalves(combined, cout);
+	const std::vector<Domain> test_domains = ReadDomains(std::cin, ReadNumberOnLine<size_t>(std::cin));
+	for (const Domain& domain : test_domains) {
+		std::cout << (checker.IsForbidden(domain) ? "Bad"sv : "Good"sv) << std::endl;
+	}
 }
