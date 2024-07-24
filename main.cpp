@@ -46,10 +46,13 @@ class DomainChecker {
 public:
 	// конструктор должен принимать список запрещённых доменов через пару итераторов
 	template <typename Iterator>
-	DomainChecker(Iterator first, Iterator last) : forbidden_domains_(first, last) {}
+	DomainChecker(Iterator first, Iterator last) : forbidden_domains_(first, last) {
+		//надо как-то отсортировать и удалить повтороения и вложенные доменны
+	}
 
 	// разработайте метод IsForbidden, возвращающий true, если домен запрещён
 	bool IsForbidden(const Domain& domain) const {
+		//надо отрезать часть доменнов которые по логике не относяться к текущему
 		for (const Domain& dom : forbidden_domains_) {
 			if (dom.IsSubdomain(domain)) return true;
 		}
