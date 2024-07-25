@@ -1,68 +1,74 @@
-#include <algorithm>
+п»ї#include <algorithm>
 #include <iostream>
-#include <string>
+#include <ranges>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <vector>
-#include <set>
-#include <algorithm>
 
 class Domain {
 public:
-	// конструктор должен позволять конструирование из string, с сигнатурой определитесь сами
-	Domain(const std::string& domain_name) : main_domain_(domain_name) {}
+	// РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґРѕР»Р¶РµРЅ РїРѕР·РІРѕР»СЏС‚СЊ РєРѕРЅСЃС‚СЂСѓРёСЂРѕРІР°РЅРёРµ РёР· string, СЃ СЃРёРіРЅР°С‚СѓСЂРѕР№ РѕРїСЂРµРґРµР»РёС‚РµСЃСЊ СЃР°РјРё
+	Domain(const std::string& domain_name) : domain_(domain_name) {
+		std::reverse(domain_.begin(), domain_.end());
+	}
 
-	// разработайте operator==
+	// СЂР°Р·СЂР°Р±РѕС‚Р°Р№С‚Рµ operator==
 	bool operator==(const Domain& other) const {
-		return main_domain_ == other.main_domain_;
+		return domain_ == other.domain_;
 	}
 
+	//СЃСѓС‰РµСЃС‚РІСѓРµС‚ РґР»СЏ СЂР°Р±РѕС‚С‹ РєРѕРјРїР°СЂР°С‚РѕСЂРѕРІ
 	bool operator<(const Domain& other) const {
-		return main_domain_ < other.main_domain_;
+		return domain_ < other.domain_;
 	}
 
-	// разработайте метод IsSubdomain, принимающий другой домен и возвращающий true, если this его поддомен
-	bool IsSubdomain(const Domain& potential_subdomain) const {
-		if (main_domain_ == potential_subdomain.main_domain_) return true;
-		else if (potential_subdomain.main_domain_.size() <= main_domain_.size() + 1) return false;
-		size_t dot_pos = potential_subdomain.main_domain_.size() - main_domain_.size() - 1;
+	// СЂР°Р·СЂР°Р±РѕС‚Р°Р№С‚Рµ РјРµС‚РѕРґ IsSubdomain, РїСЂРёРЅРёРјР°СЋС‰РёР№ РґСЂСѓРіРѕР№ РґРѕРјРµРЅ Рё РІРѕР·РІСЂР°С‰Р°СЋС‰РёР№ true, РµСЃР»Рё this РµРіРѕ РїРѕРґРґРѕРјРµРЅ
+	bool IsSubdomain(const Domain& subdomain) const {
+		if (subdomain.domain_.size() <= domain_.size() + 1) return false;
 
-		if (potential_subdomain.main_domain_[dot_pos] == '.') {
-			return potential_subdomain.main_domain_.substr(dot_pos + 1) == main_domain_;
-		} 
+		if (subdomain.domain_[domain_.size()] == '.') {
+			std::string_view sub(subdomain.domain_.begin(), subdomain.domain_.begin() + domain_.size());
+			return domain_ == sub;
+		}
 		else return false;
 	}
 
 	std::string GetDomain() const {
-		return main_domain_;
+		return domain_;
 	}
 
 private:
-	std::string main_domain_;
+	std::string domain_;
 };
-
 
 class DomainChecker {
 public:
-	// конструктор должен принимать список запрещённых доменов через пару итераторов
+	// РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґРѕР»Р¶РµРЅ РїСЂРёРЅРёРјР°С‚СЊ СЃРїРёСЃРѕРє Р·Р°РїСЂРµС‰С‘РЅРЅС‹С… РґРѕРјРµРЅРѕРІ С‡РµСЂРµР· РїР°СЂСѓ РёС‚РµСЂР°С‚РѕСЂРѕРІ
 	template <typename Iterator>
-	DomainChecker(Iterator first, Iterator last) : forbidden_domains_(first, last) {
-		//надо как-то отсортировать и удалить повтороения и вложенные доменны
+	DomainChecker(Iterator first, Iterator last) : ban_domains_(first, last) {
+		std::ranges::sort(ban_domains_, [](const Domain& lhs, const Domain& rhs) {
+			return lhs < rhs;
+			});
+		last = std::unique(ban_domains_.begin(), ban_domains_.end(), [](const Domain& lhs, const Domain& rhs) {
+			return rhs == lhs || lhs.IsSubdomain(rhs);
+			});
+		ban_domains_.erase(last, ban_domains_.end());
 	}
 
-	// разработайте метод IsForbidden, возвращающий true, если домен запрещён
-	bool IsForbidden(const Domain& domain) const {
-		//надо отрезать часть доменнов которые по логике не относяться к текущему
-		for (const Domain& dom : forbidden_domains_) {
-			if (dom.IsSubdomain(domain)) return true;
-		}
-		return false;
+	// СЂР°Р·СЂР°Р±РѕС‚Р°Р№С‚Рµ РјРµС‚РѕРґ IsForbidden, РІРѕР·РІСЂР°С‰Р°СЋС‰РёР№ true, РµСЃР»Рё РґРѕРјРµРЅ Р·Р°РїСЂРµС‰С‘РЅ
+	bool IsForbidden(const Domain& subdomain) const {
+		auto it = std::upper_bound(ban_domains_.begin(), ban_domains_.end(), subdomain, [](const Domain& lhs, const Domain& rhs) {
+			return lhs < rhs;
+			});
+		if (it == ban_domains_.begin()) return false;
+		else return subdomain == *(it - 1) || (it - 1)->IsSubdomain(subdomain);
 	}
 private:
-	std::vector<Domain> forbidden_domains_;
+	std::vector<Domain> ban_domains_;
 };
 
-// разработайте функцию ReadDomains, читающую заданное количество доменов из стандартного входа
+// СЂР°Р·СЂР°Р±РѕС‚Р°Р№С‚Рµ С„СѓРЅРєС†РёСЋ ReadDomains, С‡РёС‚Р°СЋС‰СѓСЋ Р·Р°РґР°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕРјРµРЅРѕРІ РёР· СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РІС…РѕРґР°
 const std::vector<Domain> ReadDomains(std::istream& input, size_t number) {
 	std::vector<Domain> result;
 	result.reserve(number);
