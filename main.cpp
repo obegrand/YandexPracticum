@@ -18,7 +18,7 @@ public:
 		return domain_ == other.domain_;
 	}
 
-	//существует для работы компараторов
+	// существует для работы компараторов
 	bool operator<(const Domain& other) const {
 		return domain_ < other.domain_;
 	}
