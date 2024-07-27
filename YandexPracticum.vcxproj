@@ -139,15 +139,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="budget_manager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="budget_manager.h" />
+    <ClInclude Include="bulk_updater.h" />
     <ClInclude Include="date.h" />
+    <ClInclude Include="entities.h" />
     <ClInclude Include="log_duration.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="summing_segment_tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,28 +1,31 @@
 #pragma once
+#include "bulk_updater.h"
 #include "date.h"
+#include "entities.h"
 
-struct DayInfo {
-	double income;
-	double spend;
-};
+#include <vector>
 
 class BudgetManager {
 public:
-	inline static const Date START_DATE{ 2000, 1, 1 };
-	inline static const Date END_DATE{ 2100, 1, 1 };
+    inline static const Date START_DATE{2000, 1, 1};
+    inline static const Date END_DATE{2100, 1, 1};
 
-	// разработайте класс BudgetManager
-	BudgetManager() 
-		: all_days_(START_DATE.ComputeDistance(START_DATE, END_DATE), DayInfo()) {}
+    static size_t GetDayIndex(Date day) {
+        return static_cast<size_t>(Date::ComputeDistance(START_DATE, day));
+    }
 
-	void Earn(const Date& from, const Date& to, double income);
-	
-	void Spend(const Date& from, const Date& to, double value);
+    static IndexSegment MakeDateSegment(Date from, Date to) {
+        return {GetDayIndex(from), GetDayIndex(to) + 1};
+    }
 
-	void PayTax(const Date& from, const Date& to, double tax = 0.13);
+    DayBudget ComputeSum(Date from, Date to) const {
+        return tree_.ComputeSum(MakeDateSegment(from, to));
+    }
 
-	void ComputeIncome(const Date& from, const Date& to);
+    void AddBulkOperation(Date from, Date to, const BulkLinearUpdater& operation) {
+        tree_.AddBulkOperation(MakeDateSegment(from, to), operation);
+    }
 
 private:
-	std::vector<DayInfo> all_days_;
+    SummingSegmentTree<DayBudget, BulkLinearUpdater> tree_{GetDayIndex(END_DATE)};
 };
