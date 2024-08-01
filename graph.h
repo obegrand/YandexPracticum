@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <string>
 
 namespace graph {
 
@@ -15,6 +16,8 @@ struct Edge {
     VertexId from;
     VertexId to;
     Weight weight;
+    std::string_view name;
+    size_t stops_count;
 };
 
 template <typename Weight>

@@ -1,6 +1,7 @@
 #pragma once
 #include "json.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 #include "map_renderer.h"
 
 /*
@@ -18,11 +19,16 @@ public:
 	const json::Node& GetBaseRequests() const;
 	const json::Node& GetStatRequests() const;
 	const json::Node& GetRenderSettings() const;
+	const json::Node& GetRoutingSettings() const;
 
 	void AddStop(const json::Dict& stop);
 	void SetDistances(const json::Dict& data);
 	void AddBus(const json::Dict& bus);
-	render::RenderSettings FillSettings(const json::Dict& settings_map) const;
+
+	render::RenderSettings FillRenderSettings(const json::Dict& settings_map) const;
+
+	transport::RoutingSettings FillRoutingSettings(const json::Dict& settings_map) const;
+
 
 private:
 	catalogue::TransportCatalogue& catalogue_;

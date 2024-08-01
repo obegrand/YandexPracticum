@@ -7,5 +7,10 @@ int main() {
 	catalogue::TransportCatalogue catalogue;
 	JsonReader reader(std::cin, catalogue);
 	reader.FillCatalogue();
-	RequestHandler(reader, catalogue);
+	transport::Router router(
+		/*settings*/ reader.FillRoutingSettings(
+						reader.GetRoutingSettings().AsMap()
+					 ),
+		/*catalogue*/ catalogue);
+	RequestHandler(reader, catalogue, router);
 }

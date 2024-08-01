@@ -19,7 +19,9 @@ namespace catalogue {
 
 		std::set<std::string_view> GetBusesByStop(const std::string_view name)const;
 		const std::unordered_map<std::string_view, const Bus*> GetAllBuses()const;
+		const std::unordered_map<std::string_view, const Stop*> GetAllStops()const;
 		const std::map<std::string_view, const Bus*> GetAllBusesSorted()const;
+		const std::map<std::string_view, const Stop*> GetAllStopsSorted()const;
 
 		bool ContainsBus(std::string_view number)const;
 		bool ContainsStop(std::string_view name)const;

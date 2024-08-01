@@ -50,10 +50,26 @@ namespace catalogue {
 		return result;
 	}
 
+	const std::unordered_map<std::string_view, const Stop*> TransportCatalogue::GetAllStops() const {
+		std::unordered_map<std::string_view, const Stop*> result;
+		for (const auto& stop : stops_) {
+			result.emplace(stop);
+		}
+		return result;
+	}
+
 	const std::map<std::string_view, const Bus*> TransportCatalogue::GetAllBusesSorted() const {
 		std::map<std::string_view, const Bus*> result;
 		for (const auto& bus : buses_) {
 			result.emplace(bus);
+		}
+		return result;
+	}
+
+	const std::map<std::string_view, const Stop*> TransportCatalogue::GetAllStopsSorted() const {
+		std::map<std::string_view, const Stop*> result;
+		for (const auto& stop : stops_) {
+			result.emplace(stop);
 		}
 		return result;
 	}
@@ -75,11 +91,13 @@ namespace catalogue {
 	}
 
 	double TransportCatalogue::GetDistanceBetweenStops(const Stop* stop1, const Stop* stop2) const {
-		if (stop1->distances_to_other_stops.contains(stop2->name)) {
-			return stop1->distances_to_other_stops.find(stop2->name)->second;
+		auto it = stop1->distances_to_other_stops.find(stop2->name);
+		if (it != stop1->distances_to_other_stops.end()) {
+			return it->second;
 		}
-		else if (stop2->distances_to_other_stops.contains(stop1->name)) {
-			return stop2->distances_to_other_stops.find(stop1->name)->second;
+		auto it2 = stop2->distances_to_other_stops.find(stop1->name);
+		if (it2 != stop2->distances_to_other_stops.end()) {
+			return it2->second;
 		}
 		else return 0;
 	}

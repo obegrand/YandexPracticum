@@ -1,5 +1,6 @@
 #include "json_reader.h"
 #include <map>
+#include "transport_router.h"
 
 /*
  * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
@@ -19,6 +20,11 @@ const json::Node& JsonReader::GetStatRequests() const {
 const json::Node& JsonReader::GetRenderSettings() const {
 	if (!json_doc_.GetRoot().AsMap().count("render_settings")) throw std::out_of_range("Not contain");
 	return json_doc_.GetRoot().AsMap().at("render_settings");
+}
+
+const json::Node& JsonReader::GetRoutingSettings() const {
+	if (!json_doc_.GetRoot().AsMap().count("routing_settings")) throw std::out_of_range("Not contain");
+	return json_doc_.GetRoot().AsMap().at("routing_settings");
 }
 
 void JsonReader::FillCatalogue() {
@@ -94,28 +100,35 @@ static svg::Color NodeAsColor(json::Node node) {
 	}
 }
 
-render::RenderSettings JsonReader::FillSettings(const json::Dict& request_map) const {
+render::RenderSettings JsonReader::FillRenderSettings(const json::Dict& settings_map) const {
 	render::RenderSettings render_settings;
-	render_settings.width = request_map.at("width").AsDouble();
-	render_settings.height = request_map.at("height").AsDouble();
-	render_settings.padding = request_map.at("padding").AsDouble();
-	render_settings.stop_radius = request_map.at("stop_radius").AsDouble();
-	render_settings.line_width = request_map.at("line_width").AsDouble();
-	render_settings.bus_label_font_size = request_map.at("bus_label_font_size").AsInt();
-	const json::Array& bus_label_offset = request_map.at("bus_label_offset").AsArray();
+	render_settings.width = settings_map.at("width").AsDouble();
+	render_settings.height = settings_map.at("height").AsDouble();
+	render_settings.padding = settings_map.at("padding").AsDouble();
+	render_settings.stop_radius = settings_map.at("stop_radius").AsDouble();
+	render_settings.line_width = settings_map.at("line_width").AsDouble();
+	render_settings.bus_label_font_size = settings_map.at("bus_label_font_size").AsInt();
+	const json::Array& bus_label_offset = settings_map.at("bus_label_offset").AsArray();
 	render_settings.bus_label_offset = { bus_label_offset[0].AsDouble(), bus_label_offset[1].AsDouble() };
-	render_settings.stop_label_font_size = request_map.at("stop_label_font_size").AsInt();
-	const json::Array& stop_label_offset = request_map.at("stop_label_offset").AsArray();
+	render_settings.stop_label_font_size = settings_map.at("stop_label_font_size").AsInt();
+	const json::Array& stop_label_offset = settings_map.at("stop_label_offset").AsArray();
 	render_settings.stop_label_offset = { stop_label_offset[0].AsDouble(), stop_label_offset[1].AsDouble() };
 
-	render_settings.underlayer_color = NodeAsColor(request_map.at("underlayer_color"));
+	render_settings.underlayer_color = NodeAsColor(settings_map.at("underlayer_color"));
 
-	render_settings.underlayer_width = request_map.at("underlayer_width").AsDouble();
+	render_settings.underlayer_width = settings_map.at("underlayer_width").AsDouble();
 
-	for (auto& node : request_map.at("color_palette").AsArray()) {
+	for (auto& node : settings_map.at("color_palette").AsArray()) {
 		render_settings.color_palette.emplace_back(NodeAsColor(node));
 	}
 
 	return render_settings;
+}
+
+transport::RoutingSettings JsonReader::FillRoutingSettings(const json::Dict& settings_map) const {
+	transport::RoutingSettings routing_settings;
+	routing_settings.bus_wait_time_ = settings_map.at("bus_wait_time").AsInt();
+	routing_settings.bus_velocity_ = settings_map.at("bus_velocity").AsDouble();
+	return routing_settings;
 }
 

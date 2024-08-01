@@ -14,15 +14,18 @@
 #include "transport_catalogue.h"
 #include "json_reader.h"
 #include "json.h"
+#include "transport_router.h"
 
 class RequestHandler {
 public:
-	RequestHandler(JsonReader& requests, catalogue::TransportCatalogue& catalogue);
+	RequestHandler(JsonReader& requests, catalogue::TransportCatalogue& catalogue, transport::Router& router);
 	void ProcessRequests() const;
 
 	const json::Node PrintBus(const json::Dict& request_map) const;
 
 	const json::Node PrintStop(const json::Dict& request_map) const;
+
+	const json::Node PrintRoute(const json::Dict& request_map) const;
 
 	json::Node PrintMap(const json::Dict& request_map, render::MapRender& map_render) const;
 
@@ -31,4 +34,5 @@ public:
 private:
 	const JsonReader& requests_;
 	const catalogue::TransportCatalogue& db_;
+	const transport::Router& router_;
 };
