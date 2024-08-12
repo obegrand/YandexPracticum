@@ -1,65 +1,26 @@
-#include <array>
+#include "ppm_image.h"
+
 #include <iostream>
-#include <string>
-#include "identity_document.h"
-#include "passport.h"
-#include "driving_licence.h"
-#include "international_driving_licence.h"
-#include "travel_pack.h"
+#include <string_view>
+
 using namespace std;
 
-void PrintInfo(const IdentityDocument& doc) {
-    doc.PrintID();
-}
-
-void PrintInfo() {
-    IdentityDocument::PrintUniqueIDCount();
-}
-
-void PrintInfo(const Passport& pass) {
-    pass.PrintVisa("France"s);
-}
-
-IdentityDocument PrintInfo(int i) {
-    Passport pass;
-    cout << "PrintInfo("sv << i << ")"sv << endl;
-    pass.PrintID();
-    return pass;
-}
-
-void PrintDrivingLicence(DrivingLicence dr_lic) {
-    dr_lic.PrintID();
-}
-
-int main() {
-    cout << "Test1"sv << endl;
-    Passport pass;
-    PrintInfo(pass);
-    PrintInfo(3).PrintID();
-
-    cout << "Test2"sv << endl;
-    array<IdentityDocument*, 3> docs = { (IdentityDocument*)(new Passport()), (IdentityDocument*)(new DrivingLicence()), (IdentityDocument*)(new Passport()) };
-    for (const auto* doc : docs) {
-        doc->PrintID();
+int main(int argc, const char** argv) {
+    if (argc != 3) {
+        cerr << "Usage: "sv << argv[0] << " <input image> <output image>"sv << endl;
+        return 1;
     }
 
-    for (size_t i = 0; i < docs.size(); ++i) {
-        docs[i]->Delete();
+    const auto image = img_lib::LoadPPM(argv[1]);
+    if (!image) {
+        cerr << "Error loading image"sv << endl;
+        return 2;
     }
 
-    cout << "Test3"sv << endl;
-    array<IdentityDocument, 3> docs2 = { Passport(), DrivingLicence(), IdentityDocument() };
-
-    for (size_t i = 0; i < docs2.size(); ++i) {
-        docs2[i].PrintID();
+    if (!img_lib::SavePPM(argv[2], image)) {
+        cerr << "Error saving image"sv << endl;
+        return 3;
     }
 
-    PrintInfo(docs2[0]);
-
-    cout << "Test4"sv << endl;
-    IdentityDocument::PrintUniqueIDCount();
-
-    cout << "Test5"sv << endl;
-    Passport pass2;
-    pass2.PrintUniqueIDCount();
+    cout << "Image saved successfully!"sv << endl;
 }

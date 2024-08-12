@@ -139,16 +139,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="img_lib.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="main_origin.cpp" />
+    <ClCompile Include="ppm_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="driving_licence.h" />
-    <ClInclude Include="identity_document.h" />
-    <ClInclude Include="international_driving_licence.h" />
+    <ClInclude Include="img_lib.h" />
     <ClInclude Include="log_duration.h" />
-    <ClInclude Include="passport.h" />
-    <ClInclude Include="travel_pack.h" />
+    <ClInclude Include="ppm_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
