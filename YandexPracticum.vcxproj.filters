@@ -18,12 +18,27 @@
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="main_origin.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log_duration.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="vector.h">
+    <ClInclude Include="driving_licence.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="identity_document.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="international_driving_licence.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="passport.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="travel_pack.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

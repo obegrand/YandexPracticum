@@ -140,10 +140,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_origin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="driving_licence.h" />
+    <ClInclude Include="identity_document.h" />
+    <ClInclude Include="international_driving_licence.h" />
     <ClInclude Include="log_duration.h" />
-    <ClInclude Include="vector.h" />
+    <ClInclude Include="passport.h" />
+    <ClInclude Include="travel_pack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
